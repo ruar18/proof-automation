@@ -4,6 +4,10 @@ Represent a Dafny program in Python.
 from __future__ import annotations
 from typing import List, Optional, Union, TextIO
 
+class Dafny:
+    """Represents Dafny keywords."""
+    FUNCTION = "function"
+    VAR = "var"
 
 class Function:
     """A Dafny function.
@@ -16,7 +20,7 @@ class Function:
     param_types:
         The types of the parameters of the function.
     return_type:
-        The return type of the Dafny function.
+        The (unlifted) return type of the Dafny function.
     requires:
         A list of the "requires" statements of the function.
     ensures:
@@ -48,3 +52,21 @@ class Function:
         self.ensures = ensures
         self.aux = aux
         self.body = body
+
+
+class Variable:
+    """A Dafny variable or input parameter.
+
+    === Public Attributes ===
+    name:
+        The name of the variable.
+    _type:
+        The type of the variable.
+    """
+    name: str
+    _type: str
+
+    def __init__(self, name, _type) -> None:
+        """Initialize this Variable with the given information."""
+        self.name = name
+        self._type = _type
