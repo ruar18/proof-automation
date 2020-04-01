@@ -28,7 +28,9 @@ class Function:
     aux:
         A list of Dafny functions needed for the join of this function.
     body:
-        The body of the Dafny function.
+        The body of the (unlifted) Dafny function.
+    join_body:
+        The body of the (unlifted) join for the function.
     """
     name: str
     param_names: List[str]
@@ -38,11 +40,12 @@ class Function:
     ensures: List[str]
     aux: List[Function]
     body: str
+    join_body: str
 
     def __init__(self, name: str, param_names: List[str],
                  param_types: List[str],
                  return_type: str, requires: List[str], ensures: List[str],
-                 aux: List[Function], body: str) -> None:
+                 aux: List[Function], body: str, join_body: str) -> None:
         """Initialize this Function with the given information."""
         self.name = name
         self.param_names = param_names
@@ -52,6 +55,7 @@ class Function:
         self.ensures = ensures
         self.aux = aux
         self.body = body
+        self.join_body = join_body
 
 
 class Variable:
