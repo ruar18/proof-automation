@@ -33,22 +33,11 @@ def pp_function_signature(func: Function) -> str:
     """Return a string corresponding to the signature of the lifted <func>."""
     input_params = ""
     for name, _type in zip(func.param_names, func.param_types):
-        input_params += name + ": " + _type
+        input_params += name + ": " + str(_type)
     input_params = input_params[:-1]
-    return_type = pp_function_return_type(func)
     signature = f"{Dafny.FUNCTION} {func.name}({input_params}): " \
-                f"{return_type}"
+                f"{func.lifted_type}"
     return signature
-
-
-def pp_function_return_type(func: Function) -> str:
-    """Return a string corresponding to the lifted return type of <func>."""
-    if not func.aux:
-        return func.return_type
-    # A comma-separated list of the return types for each aux
-    return_for_aux = ", ".join(map(pp_function_return_type, func.aux))
-    return_type = f"({func.return_type}, {return_for_aux})"
-    return return_type
 
 
 # Join formatting
@@ -66,13 +55,20 @@ def pp_lifted_join(func: Function) -> str:
 
 def pp_join_signature(func: Function) -> str:
     """Return the join signature for <func>."""
-    _type = pp_function_return_type(func)
+    _type = func.lifted_type
     return f"{Dafny.FUNCTION} {func.name}Join(a: {_type}, b: {_type}): {_type}"
 
 
 def pp_join_requires(func: Function) -> str:
     """Return a string representing the preconditions for the join of <func>."""
-    pass  # TODO: represent Dafny types
+    requires = f"{Dafny.REQ} "
+    # A list of all sequence indices in the return type of <func>
+    all_seq = []
+    for i, name, _type in enumerate(zip(func.param_names, func.param_types)):
+        # If the current parameter is an untupled seq<int>:
+        if _type.is_seq == Dafny.SEQ:
+            all_seq.append(f"|{name}|")
+        # TODO: rest
 
 
 def pp_join_body(func: Function) -> str:
