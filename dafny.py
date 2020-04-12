@@ -9,8 +9,10 @@ class Dafny:
     """Represents Dafny keywords."""
     FUNCTION = "function"
     REQ = "requires"
+    ENS = "ensures"
     VAR = "var"
     SEQ = "seq<int>"
+    SEQ2D = "seq2D"
 
 
 class Function:
@@ -58,12 +60,12 @@ class Function:
         self.param_names = param_names
         self.param_types = param_types
         self.return_type = return_type
-        self.__set_lifted__type()
         self.requires = requires
         self.ensures = ensures
         self.aux = aux
         self.body = body
         self.join_body = join_body
+        self.__set_lifted__type()
 
     def __set_lifted__type(self) -> None:
         """Compute and set the lifted type for this Function."""

@@ -10,8 +10,12 @@ from dafny import Dafny, Function
 def pp_lifted_function(func: Function) -> str:
     """Return a string corresponding to the lifted version of <func>."""
     signature = pp_function_signature(func)
-    ensures = ", ".join(func.ensures)
-    requires = ", ".join(func.requires)
+    ensures = ""
+    requires = ""
+    if func.ensures:
+        ensures = f"{Dafny.ENS} " + ", ".join(func.ensures)
+    if func.requires:
+        requires = f"{Dafny.REQ} " + ", ".join(func.requires)
     body = pp_function_body(func)
     full = signature
     if ensures:
@@ -59,16 +63,18 @@ def pp_join_signature(func: Function) -> str:
     return f"{Dafny.FUNCTION} {func.name}Join(a: {_type}, b: {_type}): {_type}"
 
 
-def pp_join_requires(func: Function) -> str:
-    """Return a string representing the preconditions for the join of <func>."""
+def pp_join_requires(func: Function, name: str) -> str:
+    """Return a string representing the preconditions for the join of <func> for
+    the parameter <name>."""
     requires = f"{Dafny.REQ} "
-    # A list of all sequence indices in the return type of <func>
-    all_seq = []
-    for i, name, _type in enumerate(zip(func.param_names, func.param_types)):
-        # If the current parameter is an untupled seq<int>:
-        if _type.is_seq == Dafny.SEQ:
-            all_seq.append(f"|{name}|")
-        # TODO: rest
+    indices = []
+    # If the return type is just an untupled sequence:
+    if func.lifted_type.is_seq:
+        indices.append(f"|{name}|")
+    elif func.lifted_type.tuple_type:
+        indices.extend(func.lifted_type.get_seq_indices())
+    requires += " == ".join(indices)
+    return requires
 
 
 def pp_join_body(func: Function) -> str:
