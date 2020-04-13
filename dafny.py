@@ -10,9 +10,11 @@ class Dafny:
     FUNCTION = "function"
     REQ = "requires"
     ENS = "ensures"
+    DEC = "decreases"
     VAR = "var"
     SEQ = "seq<int>"
     SEQ2D = "seq2D"
+    INT = "int"
 
 
 class Function:

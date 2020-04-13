@@ -27,18 +27,22 @@ def pp_lifted_function(func: Function) -> str:
 
 
 def pp_function_body(func: Function) -> str:
-    body = f"{Dafny.VAR} {func.name}Res := ({func.body})"
+    body = f"{Dafny.VAR} {func.name}Res := ({func.body});"
+    inputs = pp_function_inputs(func)
     for aux in func.aux:
-        body += f"\n {Dafny.VAR} {aux.name}Res := ({aux.body})"
+        body += f"\n {Dafny.VAR} {aux.name}Res := {aux.name}({inputs});"
     return body
 
+def pp_function_inputs(func: Function) -> str:
+    input_params = ""
+    for name, _type in zip(func.param_names, func.param_types):
+        input_params += f"{name}: {_type}, "
+    input_params = input_params[:-2]
+    return input_params
 
 def pp_function_signature(func: Function) -> str:
     """Return a string corresponding to the signature of the lifted <func>."""
-    input_params = ""
-    for name, _type in zip(func.param_names, func.param_types):
-        input_params += name + ": " + str(_type)
-    input_params = input_params[:-1]
+    input_params = pp_function_inputs(func)
     signature = f"{Dafny.FUNCTION} {func.name}({input_params}): " \
                 f"{func.lifted_type}"
     return signature
@@ -48,7 +52,7 @@ def pp_function_signature(func: Function) -> str:
 def pp_lifted_join(func: Function) -> str:
     """Return a string corresponding to the lifted join of <func>."""
     signature = pp_join_signature(func)
-    requires = pp_join_requires(func)
+    requires = pp_seq_requires(func, ["a", "b"])
     body = pp_join_body(func)
     full = signature
     if requires:
@@ -63,21 +67,31 @@ def pp_join_signature(func: Function) -> str:
     return f"{Dafny.FUNCTION} {func.name}Join(a: {_type}, b: {_type}): {_type}"
 
 
-def pp_join_requires(func: Function, name: str) -> str:
-    """Return a string representing the preconditions for the join of <func> for
-    the parameter <name>."""
-    requires = f"{Dafny.REQ} "
+def pp_all_sequences(func: Function, name: str) -> List[str]:
+    """Return a list of strings, each of which represents a sequence
+    in the return type of <func>, with parameter name <name>."""
     indices = []
     # If the return type is just an untupled sequence:
     if func.lifted_type.is_seq:
-        indices.append(f"|{name}|")
+        indices.append(f"{name}")
     elif func.lifted_type.tuple_type:
         indices.extend(func.lifted_type.get_seq_indices())
-    requires += " == ".join(indices)
+    return indices
+
+
+def pp_seq_requires(func: Function, names: List[str]) -> str:
+    """Return a string representing the preconditions for the join/associativity
+    lemma of <func>, for the parameter names in <names>"""
+    requires = f"{Dafny.REQ} "
+    sequences = []
+    for name in names:
+        sequences.extend(pp_all_sequences(func, name))
+    requires += " == ".join(f"|{seq}|" for seq in sequences)
     return requires
 
 
 def pp_join_body(func: Function) -> str:
+    """Return a string representing the join body for <func>"""
     body = f"{Dafny.VAR} {func.name}Res := ({func.join_body})"
     for aux in func.aux:
         body += f"\n {Dafny.VAR} {aux.name}Res := ({aux.join_body})"
@@ -88,7 +102,21 @@ def pp_join_body(func: Function) -> str:
 def pp_assoc_ensures(func: Function) -> str:
     """Return a string representation of the postcondition of the associativity
     lemma for <func>."""
-    pass
+    join_name = f"{func.name}Join"
+    left_assoc = f"{join_name}({join_name}(a, b), c)"
+    right_assoc = f"{join_name}(a, {join_name}(b, c))"
+    return f"{Dafny.ENS} {left_assoc} == {right_assoc}"
+
+
+def pp_assoc_decreases(func: Function) -> str:
+    """Return a string representation of the "decreases" measure of the
+    associativity lemma for <func>."""
+    decreases = f"{Dafny.DEC} "
+    sequences = []
+    for name in ['a', 'b', 'c']:
+        sequences.extend(pp_all_sequences(func, name))
+    decreases += ", ".join(sequences)
+    return decreases
 
 
 # Homomorphism proof formatting

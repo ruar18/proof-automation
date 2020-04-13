@@ -1,0 +1,11 @@
+function recSumS(s: seq2D): (seq<int>)
+ensures |recSumS(s)| == width(s)
+{
+var recSumSRes := (if s == [] then [] else if |s| == 1 then preSum(s[0]) else  
+    vAdd(recSumS(s[..|s|-1]), preSum(s[|s|-1])));
+}function Mrr(s: seq2D): (int, (seq<int>))
+{
+var MrrRes := ((if s == [] then 0 else if |s| == 1 then vMax(zeroSeq(|s[|s|-1]|), 
+    preSum(s[|s|-1])) else vMax(recSumS(s[..|s|-1]), preSum(s[|s|-1]))));
+ var recSumSRes := recSumS(s: seq2D);
+}
