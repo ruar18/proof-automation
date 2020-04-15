@@ -74,8 +74,9 @@ class Function:
         # If the function does not need to be lifted
         if not self.aux:
             self.lifted_type = self.return_type
-        aux_types = [func.lifted_type for func in self.aux]
-        self.lifted_type = Type([self.return_type] + aux_types)
+        else:
+            aux_types = [func.lifted_type for func in self.aux]
+            self.lifted_type = Type([self.return_type] + aux_types)
 
 
 class Variable:
@@ -105,7 +106,7 @@ class Type:
     simple_type:
         If this Type is not a tuple of types, this is its type.
     is_seq:
-        Indicates whether this Type is a simple seq<int> type
+        Indicates whether this Type is a simple (seq<int>) type
 
     === Representation Invariants ===
         - tuple_type is empty if and only if simple_type is not empty.
@@ -123,7 +124,7 @@ class Type:
     def __str__(self) -> str:
         """Return the string representation of this Type."""
         if self.simple_type:
-            return self.simple_type
+            return f"{self.simple_type}"
         return f"({', '.join(map(str, self.tuple_type))})"
 
     def get_seq_indices(self) -> List[str]:

@@ -22,8 +22,15 @@ def pp_lifted_function(func: Function) -> str:
         full += f"\n{ensures}"
     if requires:
         full += f"\n{requires}"
-    full += f"\n{{\n{body}\n}}"  # TODO: fix indentation
+    return_line = pp_return(func)
+    full += f"\n{{\n{body}\n{return_line}\n}}"  # TODO: fix indentation
     return full
+
+
+def pp_return(func: Function) -> str:
+    """Return a string representing the return line of the lifted <func>."""
+    var_list = [f"{func.name}Res"] + [f"{aux.name}Res" for aux in func.aux]
+    return f"({', '.join(var_list)})"
 
 
 def pp_function_body(func: Function) -> str:
@@ -33,12 +40,14 @@ def pp_function_body(func: Function) -> str:
         body += f"\n {Dafny.VAR} {aux.name}Res := {aux.name}({inputs});"
     return body
 
+
 def pp_function_inputs(func: Function) -> str:
     input_params = ""
     for name, _type in zip(func.param_names, func.param_types):
         input_params += f"{name}: {_type}, "
     input_params = input_params[:-2]
     return input_params
+
 
 def pp_function_signature(func: Function) -> str:
     """Return a string corresponding to the signature of the lifted <func>."""
@@ -55,9 +64,10 @@ def pp_lifted_join(func: Function) -> str:
     requires = pp_seq_requires(func, ["a", "b"])
     body = pp_join_body(func)
     full = signature
+    return_line = pp_return(func)
     if requires:
         full += f"\n{requires}"
-    full += f"\n{{\n{body}\n}}"  # TODO: fix indentation
+    full += f"\n{{\n{body}\n{return_line}\n}}"  # TODO: fix indentation
     return full
 
 
@@ -71,11 +81,13 @@ def pp_all_sequences(func: Function, name: str) -> List[str]:
     """Return a list of strings, each of which represents a sequence
     in the return type of <func>, with parameter name <name>."""
     indices = []
-    # If the return type is just an untupled sequence:
+    # If the return type is just (seq<int>):
     if func.lifted_type.is_seq:
         indices.append(f"{name}")
-    elif func.lifted_type.tuple_type:
-        indices.extend(func.lifted_type.get_seq_indices())
+    if func.lifted_type.tuple_type:
+        named_indices = [f"{name}.{idx}" for idx in
+                         func.lifted_type.get_seq_indices()]
+        indices.extend(named_indices)
     return indices
 
 
@@ -92,9 +104,10 @@ def pp_seq_requires(func: Function, names: List[str]) -> str:
 
 def pp_join_body(func: Function) -> str:
     """Return a string representing the join body for <func>"""
-    body = f"{Dafny.VAR} {func.name}Res := ({func.join_body})"
+    body = f"{Dafny.VAR} {func.name}Res := ({func.join_body});"
+    # TODO: fix this, it will fail quite badly with indexing into inputs
     for aux in func.aux:
-        body += f"\n {Dafny.VAR} {aux.name}Res := ({aux.join_body})"
+        body += f"\n {Dafny.VAR} {aux.name}Res := ({aux.join_body});"
     return body
 
 

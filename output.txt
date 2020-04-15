@@ -3,9 +3,26 @@ ensures |recSumS(s)| == width(s)
 {
 var recSumSRes := (if s == [] then [] else if |s| == 1 then preSum(s[0]) else  
     vAdd(recSumS(s[..|s|-1]), preSum(s[|s|-1])));
-}function Mrr(s: seq2D): (int, (seq<int>))
+(recSumSRes)
+}
+function Mrr(s: seq2D): ((int), (seq<int>))
 {
 var MrrRes := ((if s == [] then 0 else if |s| == 1 then vMax(zeroSeq(|s[|s|-1]|), 
     preSum(s[|s|-1])) else vMax(recSumS(s[..|s|-1]), preSum(s[|s|-1]))));
  var recSumSRes := recSumS(s: seq2D);
+(MrrRes, recSumSRes)
+}
+function Mcr(s: seq2D): ((seq<int>), (seq<int>))
+ensures ensures |Mcr(s).0| == width(s)
+{
+var McrRes := ((if s == [] then []  else if |s| == 1 then preSum(s[0]) else 
+    pMax(recSumS(s), Mcr(s[..|s|-1]).0)));
+ var recSumSRes := recSumS(s: seq2D);
+(McrRes, recSumSRes)
+}
+function recSumSJoin(a: (seq<int>), b: (seq<int>)): (seq<int>)
+requires |a.0| == |b.0|
+{
+var recSumSRes := (vAdd(a,b));
+(recSumSRes)
 }
