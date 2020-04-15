@@ -55,6 +55,7 @@ def test_printing() -> None:
     f.write(format.pp_lifted_function(mrr) + "\n")
     f.write(format.pp_lifted_function(mcr) + "\n")
     f.write(format.pp_lifted_join(rec_sum) + "\n")
+    f.write(format.pp_hom_proof(rec_sum) + "\n")
 
 
 

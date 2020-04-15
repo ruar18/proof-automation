@@ -26,3 +26,15 @@ requires |a.0| == |b.0|
 var recSumSRes := (vAdd(a,b));
 (recSumSRes)
 }
+lemma HomrecSumS(s: seq2D, t: seq2D
+requires width(s) == width(t)
+ensures recSumS(s + t) == recSumSJoin(recSumS(s), recSumS(t))
+{if t == [] {
+assert s + t == s;} else if |t| == 1 {}
+else{
+var t1 := t[..|t|-1];
+var t2 := [t[|t|-1]];
+assert (s + t1) + t2 == s + t;
+recSumSJoinAssoc(recSumS(s), recSumS(t1), recSumS(t2));
+}
+}

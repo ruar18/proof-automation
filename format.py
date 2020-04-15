@@ -136,10 +136,49 @@ def pp_assoc_decreases(func: Function) -> str:
 def pp_hom_proof(func: Function) -> str:
     """Return a string corresponding to the homomorphism proof of the
     Dafny function <func>."""
-    pass
+    signature = pp_hom_signature(func)
+    requires = pp_hom_requires()
+    ensures = pp_hom_ensures(func)
+    base = pp_hom_base_cases()
+    induct = pp_hom_induction(func)
+    return f"{signature}\n{requires}\n{ensures}\n{{{base}\n{induct}\n}}"
+
+
+def pp_hom_signature(func: Function) -> str:
+    """Return a string corresponding to the signature of the homomorphism proof
+    of <func>."""
+    return f"{Dafny.LEM} Hom{func.name}(s: {Dafny.SEQ2D}, t: {Dafny.SEQ2D}"
 
 
 def pp_hom_requires() -> str:
     """Return a string corresponding to the precondition of a homomorphism
     proof."""
-    return "requires width(s) == width(t)"
+    return f"{Dafny.REQ} width(s) == width(t)"
+
+
+def pp_hom_ensures(func: Function) -> str:
+    """Return a string corresponding to the postcondition of a homomorphism
+    proof of <func>."""
+    return f"{Dafny.ENS} {func.name}(s + t) == " \
+           f"{func.name}Join({func.name}(s), {func.name}(t))"
+
+
+def pp_hom_base_cases() -> str:
+    """Return a string corresponding to the empty and singleton base cases
+    of a homomorphism proof."""
+    # TODO: fix indentation
+    base = f"{Dafny.IF} t == [] {{\n"
+    base += f"{Dafny.ASRT} s + t == s;"
+    base += f"}} {Dafny.ELSEIF} |t| == 1 {{}}"
+    return base
+
+
+def pp_hom_induction(func: Function) -> str:
+    """Return a string corresponding to the induction step of the homomorphism
+    proof of <func>."""
+    induct = f"{Dafny.ELSE}{{\n{Dafny.VAR} t1 := t[..|t|-1];\n"
+    induct += f"{Dafny.VAR} t2 := [t[|t|-1]];\n"
+    induct += f"{Dafny.ASRT} (s + t1) + t2 == s + t;\n"
+    name = func.name
+    induct += f"{name}JoinAssoc({name}(s), {name}(t1), {name}(t2));\n}}"
+    return induct

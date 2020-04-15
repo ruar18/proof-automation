@@ -15,6 +15,11 @@ class Dafny:
     SEQ = "seq<int>"
     SEQ2D = "seq2D"
     INT = "int"
+    IF = "if"
+    ELSEIF = "else if"
+    ELSE = "else"
+    ASRT = "assert"
+    LEM = "lemma"
 
 
 class Function:
