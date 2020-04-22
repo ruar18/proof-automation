@@ -17,7 +17,6 @@ _int_simple = Type([], Dafny.INT)
 seq = Type([seq_simple])
 _int = Type([_int_simple])
 
-
 ####### recSumS definition #######
 rec_sum_body = """if s == [] then [] else if |s| == 1 then preSum(s[0]) else  
     vAdd(recSumS(s[..|s|-1]), preSum(s[|s|-1]))"""
@@ -42,6 +41,13 @@ mcr_join = """pMax(vAdd(a.1, b.0), a.0)"""
 mcr = Function("Mcr", ["s"], [seq_2d], seq, [],
                ["ensures |Mcr(s).0| == width(s)"], [rec_sum], mcr_body, mcr_join)
 
+####### Mtlr definition #######
+mtlr_body = """(if s == [] then 0 else Max(Mtlr(s[..|s|-1]).0, Mrr(s).0))"""
+mtlr_join = """Max(a.0, vMax(a.1.1, b.1.0))"""
+
+mtlr = Function("Mtlr", ["s"], [seq_2d], _int, [], [], [mcr], mtlr_body,
+                mtlr_join)
+
 
 def strip_whitespace(s: str) -> str:
     """Strips all whitespace from <s>."""
@@ -55,8 +61,12 @@ def test_printing() -> None:
     f.write(format.pp_lifted_function(mrr) + "\n")
     f.write(format.pp_lifted_function(mcr) + "\n")
     f.write(format.pp_lifted_join(rec_sum) + "\n")
+    f.write(format.pp_assoc_proof(rec_sum) + "\n")
     f.write(format.pp_hom_proof(rec_sum) + "\n")
-
+    f.write(format.pp_lifted_function(mtlr) + "\n")
+    f.write(format.pp_lifted_join(mtlr) + "\n")
+    f.write(format.pp_assoc_proof(mtlr) + "\n")
+    f.write(format.pp_hom_proof(mtlr) + "\n")
 
 
 if __name__ == '__main__':

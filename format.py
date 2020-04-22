@@ -35,16 +35,19 @@ def pp_return(func: Function) -> str:
 
 def pp_function_body(func: Function) -> str:
     body = f"{Dafny.VAR} {func.name}Res := ({func.body});"
-    inputs = pp_function_inputs(func)
+    inputs = pp_function_inputs(func, print_type=False)
     for aux in func.aux:
         body += f"\n {Dafny.VAR} {aux.name}Res := {aux.name}({inputs});"
     return body
 
 
-def pp_function_inputs(func: Function) -> str:
+def pp_function_inputs(func: Function, print_type=True) -> str:
     input_params = ""
     for name, _type in zip(func.param_names, func.param_types):
-        input_params += f"{name}: {_type}, "
+        if print_type:
+            input_params += f"{name}: {_type}, "
+        else:
+            input_params += f"{name}, "
     input_params = input_params[:-2]
     return input_params
 
@@ -130,6 +133,58 @@ def pp_assoc_decreases(func: Function) -> str:
         sequences.extend(pp_all_sequences(func, name))
     decreases += ", ".join(sequences)
     return decreases
+
+
+# def pp_assoc_requires(func: Function) -> str:
+#     """Return a string representation of the precondition of the associativity
+#     lemma for <func>."""
+#     requires = f"{Dafny.REQ}"
+#     sequences = []
+#     for name in ['a', 'b', 'c']:
+#         sequences.extend(pp_all_sequences(func, name))
+#     requires += " == ".join(f"|{seq}|" for seq in sequences)
+#     return requires
+
+
+def pp_assoc_signature(func: Function) -> str:
+    """Return a string representation of the signature of the associativity
+    lemma for <func>."""
+    _type = func.lifted_type
+    return f"{Dafny.LEM} {func.name}JoinAssoc" \
+           f"(a: {_type}, b: {_type}, c: {_type}): {_type}"
+
+
+def pp_assoc_base_case(func: Function) -> str:
+    """Return a string representation of the base case of the associativity
+    lemma for <func>."""
+    sequences = pp_all_sequences(func, "a")
+    return f"{Dafny.IF} |{sequences[0]}| == 0 {{}}"
+
+
+def pp_assoc_induction(func: Function) -> str:
+    """Return a string representation of the induction step of the associativity
+    lemma for <func>."""
+    # TODO: fix indentation
+    induct = f"{Dafny.ELSE}\n{{\n"
+    sequences = []
+    for name in ['a', 'b', 'c']:
+        sequences.extend(pp_all_sequences(func, name))
+    # For each sequence, make a smaller sequence
+    new_sequences = []
+    # TODO: experiment more with the Dafny implementation before writing this
+    return "placeholder}"
+
+
+def pp_assoc_proof(func: Function) -> str:
+    """Return a string representation of the associativity lemma for <func>."""
+    signature = pp_assoc_signature(func)
+    decreases = pp_assoc_decreases(func)
+    requires = pp_seq_requires(func, ["a", "b", "c"])
+    ensures = pp_assoc_ensures(func)
+    base = pp_assoc_base_case(func)
+    induct = pp_assoc_induction(func)
+    return f"{signature}\n{decreases}\n{requires}\n{ensures}\n" \
+           f"{{{base}\n{induct}}}"
 
 
 # Homomorphism proof formatting
