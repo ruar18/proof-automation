@@ -4,6 +4,14 @@ Functions to format a homomorphism proof for a given Dafny function.
 from __future__ import annotations
 from typing import List, Optional, Union, TextIO
 from dafny import Dafny, Function
+import textwrap
+
+INDENT_AMOUNT = 4
+
+
+# Line indenting
+def indent(s: str) -> str:
+    return textwrap.indent(s, INDENT_AMOUNT * " ")
 
 
 # Function formatting
@@ -12,18 +20,16 @@ def pp_lifted_function(func: Function) -> str:
     signature = pp_function_signature(func)
     ensures = ""
     requires = ""
-    if func.ensures:
-        ensures = f"{Dafny.ENS} " + ", ".join(func.ensures)
-    if func.requires:
-        requires = f"{Dafny.REQ} " + ", ".join(func.requires)
-    body = pp_function_body(func)
     full = signature
-    if ensures:
+    if func.ensures:
+        ensures = indent(f"{Dafny.ENS} " + ", ".join(func.ensures))
         full += f"\n{ensures}"
-    if requires:
+    if func.requires:
+        requires = indent(f"{Dafny.REQ} " + ", ".join(func.requires))
         full += f"\n{requires}"
-    return_line = pp_return(func)
-    full += f"\n{{\n{body}\n{return_line}\n}}"  # TODO: fix indentation
+    body = indent(pp_function_body(func))
+    return_line = indent(pp_return(func))
+    full += f"\n{{\n{body}\n{return_line}\n}}"
     return full
 
 
@@ -37,7 +43,7 @@ def pp_function_body(func: Function) -> str:
     body = f"{Dafny.VAR} {func.name}Res := ({func.body});"
     inputs = pp_function_inputs(func, print_type=False)
     for aux in func.aux:
-        body += f"\n {Dafny.VAR} {aux.name}Res := {aux.name}({inputs});"
+        body += f"\n{Dafny.VAR} {aux.name}Res := {aux.name}({inputs});"
     return body
 
 
@@ -64,13 +70,13 @@ def pp_function_signature(func: Function) -> str:
 def pp_lifted_join(func: Function) -> str:
     """Return a string corresponding to the lifted join of <func>."""
     signature = pp_join_signature(func)
-    requires = pp_seq_requires(func, ["a", "b"])
-    body = pp_join_body(func)
+    requires = indent(pp_seq_requires(func, ["a", "b"]))
+    body = indent(pp_join_body(func))
     full = signature
-    return_line = pp_return(func)
+    return_line = indent(pp_return(func))
     if requires:
         full += f"\n{requires}"
-    full += f"\n{{\n{body}\n{return_line}\n}}"  # TODO: fix indentation
+    full += f"\n{{\n{body}\n{return_line}\n}}"
     return full
 
 
@@ -110,7 +116,7 @@ def pp_join_body(func: Function) -> str:
     body = f"{Dafny.VAR} {func.name}Res := ({func.join_body});"
     # TODO: fix this, it will fail quite badly with indexing into inputs
     for aux in func.aux:
-        body += f"\n {Dafny.VAR} {aux.name}Res := ({aux.join_body});"
+        body += f"\n{Dafny.VAR} {aux.name}Res := ({aux.join_body});"
     return body
 
 
@@ -178,11 +184,11 @@ def pp_assoc_induction(func: Function) -> str:
 def pp_assoc_proof(func: Function) -> str:
     """Return a string representation of the associativity lemma for <func>."""
     signature = pp_assoc_signature(func)
-    decreases = pp_assoc_decreases(func)
-    requires = pp_seq_requires(func, ["a", "b", "c"])
-    ensures = pp_assoc_ensures(func)
-    base = pp_assoc_base_case(func)
-    induct = pp_assoc_induction(func)
+    decreases = indent(pp_assoc_decreases(func))
+    requires = indent(pp_seq_requires(func, ["a", "b", "c"]))
+    ensures = indent(pp_assoc_ensures(func))
+    base = indent(pp_assoc_base_case(func))
+    induct = indent(pp_assoc_induction(func))
     return f"{signature}\n{decreases}\n{requires}\n{ensures}\n" \
            f"{{{base}\n{induct}}}"
 
@@ -192,17 +198,20 @@ def pp_hom_proof(func: Function) -> str:
     """Return a string corresponding to the homomorphism proof of the
     Dafny function <func>."""
     signature = pp_hom_signature(func)
-    requires = pp_hom_requires()
-    ensures = pp_hom_ensures(func)
-    base = pp_hom_base_cases()
-    induct = pp_hom_induction(func)
-    return f"{signature}\n{requires}\n{ensures}\n{{{base}\n{induct}\n}}"
+    requires = indent(pp_hom_requires())
+    ensures = indent(pp_hom_ensures(func))
+    base = indent(pp_hom_base_cases())
+    induct = indent(pp_hom_induction(func))
+    full = f"{signature}\n{requires}\n{ensures}\n"
+    full += indent(f"{{{base}\n{induct}\n}}")
+    return f"{signature}\n{requires}\n{ensures}\n{{\n{base}\n{induct}\n}}"
+    # return full
 
 
 def pp_hom_signature(func: Function) -> str:
     """Return a string corresponding to the signature of the homomorphism proof
     of <func>."""
-    return f"{Dafny.LEM} Hom{func.name}(s: {Dafny.SEQ2D}, t: {Dafny.SEQ2D}"
+    return f"{Dafny.LEM} Hom{func.name}(s: {Dafny.SEQ2D}, t: {Dafny.SEQ2D})"
 
 
 def pp_hom_requires() -> str:
@@ -222,18 +231,20 @@ def pp_hom_base_cases() -> str:
     """Return a string corresponding to the empty and singleton base cases
     of a homomorphism proof."""
     # TODO: fix indentation
-    base = f"{Dafny.IF} t == [] {{\n"
-    base += f"{Dafny.ASRT} s + t == s;"
-    base += f"}} {Dafny.ELSEIF} |t| == 1 {{}}"
+    base = f"{Dafny.IF} t == [] \n{{\n"
+    base += indent(f"{Dafny.ASRT} s + t == s;\n")
+    base += f"}}\n{Dafny.ELSEIF} |t| == 1 \n{{\n}}"
     return base
 
 
 def pp_hom_induction(func: Function) -> str:
     """Return a string corresponding to the induction step of the homomorphism
     proof of <func>."""
-    induct = f"{Dafny.ELSE}{{\n{Dafny.VAR} t1 := t[..|t|-1];\n"
-    induct += f"{Dafny.VAR} t2 := [t[|t|-1]];\n"
-    induct += f"{Dafny.ASRT} (s + t1) + t2 == s + t;\n"
+    induct = f"{Dafny.ELSE}\n{{\n"
+    induct += indent(f"{Dafny.VAR} t1 := t[..|t|-1];\n")
+    induct += indent(f"{Dafny.VAR} t2 := [t[|t|-1]];\n")
+    induct += indent(f"{Dafny.ASRT} (s + t1) + t2 == s + t;\n")
     name = func.name
-    induct += f"{name}JoinAssoc({name}(s), {name}(t1), {name}(t2));\n}}"
+    induct += indent(f"{name}JoinAssoc({name}(s), {name}(t1), {name}(t2));\n")
+    induct += "}"
     return induct

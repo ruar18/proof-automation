@@ -1,77 +1,101 @@
 function recSumS(s: seq2D): (seq<int>)
-ensures |recSumS(s)| == width(s)
+    ensures |recSumS(s)| == width(s)
 {
-var recSumSRes := (if s == [] then [] else if |s| == 1 then preSum(s[0]) else  
-    vAdd(recSumS(s[..|s|-1]), preSum(s[|s|-1])));
-(recSumSRes)
+    var recSumSRes := (if s == [] then [] else if |s| == 1 then preSum(s[0]) else  
+        vAdd(recSumS(s[..|s|-1]), preSum(s[|s|-1])));
+    (recSumSRes)
 }
+
 function Mrr(s: seq2D): ((int), (seq<int>))
 {
-var MrrRes := ((if s == [] then 0 else if |s| == 1 then vMax(zeroSeq(|s[|s|-1]|), 
-    preSum(s[|s|-1])) else vMax(recSumS(s[..|s|-1]), preSum(s[|s|-1]))));
- var recSumSRes := recSumS(s);
-(MrrRes, recSumSRes)
+    var MrrRes := ((if s == [] then 0 else if |s| == 1 then vMax(zeroSeq(|s[|s|-1]|), 
+        preSum(s[|s|-1])) else vMax(recSumS(s[..|s|-1]), preSum(s[|s|-1]))));
+    var recSumSRes := recSumS(s);
+    (MrrRes, recSumSRes)
 }
+
 function Mcr(s: seq2D): ((seq<int>), (seq<int>))
-ensures ensures |Mcr(s).0| == width(s)
+    ensures ensures |Mcr(s).0| == width(s)
 {
-var McrRes := ((if s == [] then []  else if |s| == 1 then preSum(s[0]) else 
-    pMax(recSumS(s), Mcr(s[..|s|-1]).0)));
- var recSumSRes := recSumS(s);
-(McrRes, recSumSRes)
+    var McrRes := ((if s == [] then []  else if |s| == 1 then preSum(s[0]) else 
+        pMax(recSumS(s), Mcr(s[..|s|-1]).0)));
+    var recSumSRes := recSumS(s);
+    (McrRes, recSumSRes)
 }
+
 function recSumSJoin(a: (seq<int>), b: (seq<int>)): (seq<int>)
-requires |a.0| == |b.0|
+    requires |a.0| == |b.0|
 {
-var recSumSRes := (vAdd(a,b));
-(recSumSRes)
+    var recSumSRes := (vAdd(a,b));
+    (recSumSRes)
 }
+
 lemma recSumSJoinAssoc(a: (seq<int>), b: (seq<int>), c: (seq<int>)): (seq<int>)
-decreases a.0, b.0, c.0
-requires |a.0| == |b.0| == |c.0|
-ensures recSumSJoin(recSumSJoin(a, b), c) == recSumSJoin(a, recSumSJoin(b, c))
-{if |a.0| == 0 {}
-placeholder}}
-lemma HomrecSumS(s: seq2D, t: seq2D
-requires width(s) == width(t)
-ensures recSumS(s + t) == recSumSJoin(recSumS(s), recSumS(t))
-{if t == [] {
-assert s + t == s;} else if |t| == 1 {}
-else{
-var t1 := t[..|t|-1];
-var t2 := [t[|t|-1]];
-assert (s + t1) + t2 == s + t;
-recSumSJoinAssoc(recSumS(s), recSumS(t1), recSumS(t2));
+    decreases a.0, b.0, c.0
+    requires |a.0| == |b.0| == |c.0|
+    ensures recSumSJoin(recSumSJoin(a, b), c) == recSumSJoin(a, recSumSJoin(b, c))
+{    if |a.0| == 0 {}
+    placeholder}}
+
+lemma HomrecSumS(s: seq2D, t: seq2D)
+    requires width(s) == width(t)
+    ensures recSumS(s + t) == recSumSJoin(recSumS(s), recSumS(t))
+{
+    if t == [] 
+    {
+        assert s + t == s;
+    }
+    else if |t| == 1 
+    {
+    }
+    else
+    {
+        var t1 := t[..|t|-1];
+        var t2 := [t[|t|-1]];
+        assert (s + t1) + t2 == s + t;
+        recSumSJoinAssoc(recSumS(s), recSumS(t1), recSumS(t2));
+    }
 }
-}
+
 function Mtlr(s: seq2D): ((int), ((seq<int>), (seq<int>)))
 {
-var MtlrRes := ((if s == [] then 0 else Max(Mtlr(s[..|s|-1]).0, Mrr(s).0)));
- var McrRes := Mcr(s);
-(MtlrRes, McrRes)
+    var MtlrRes := ((if s == [] then 0 else Max(Mtlr(s[..|s|-1]).0, Mrr(s).0)));
+    var McrRes := Mcr(s);
+    (MtlrRes, McrRes)
 }
+
 function MtlrJoin(a: ((int), ((seq<int>), (seq<int>))), b: ((int), ((seq<int>), (seq<int>)))): ((int), ((seq<int>), (seq<int>)))
-requires |a.1.0.0| == |a.1.1.0| == |b.1.0.0| == |b.1.1.0|
+    requires |a.1.0.0| == |a.1.1.0| == |b.1.0.0| == |b.1.1.0|
 {
-var MtlrRes := (Max(a.0, vMax(a.1.1, b.1.0)));
- var McrRes := (pMax(vAdd(a.1, b.0), a.0));
-(MtlrRes, McrRes)
+    var MtlrRes := (Max(a.0, vMax(a.1.1, b.1.0)));
+    var McrRes := (pMax(vAdd(a.1, b.0), a.0));
+    (MtlrRes, McrRes)
 }
+
 lemma MtlrJoinAssoc(a: ((int), ((seq<int>), (seq<int>))), b: ((int), ((seq<int>), (seq<int>))), c: ((int), ((seq<int>), (seq<int>)))): ((int), ((seq<int>), (seq<int>)))
-decreases a.1.0.0, a.1.1.0, b.1.0.0, b.1.1.0, c.1.0.0, c.1.1.0
-requires |a.1.0.0| == |a.1.1.0| == |b.1.0.0| == |b.1.1.0| == |c.1.0.0| == |c.1.1.0|
-ensures MtlrJoin(MtlrJoin(a, b), c) == MtlrJoin(a, MtlrJoin(b, c))
-{if |a.1.0.0| == 0 {}
-placeholder}}
-lemma HomMtlr(s: seq2D, t: seq2D
-requires width(s) == width(t)
-ensures Mtlr(s + t) == MtlrJoin(Mtlr(s), Mtlr(t))
-{if t == [] {
-assert s + t == s;} else if |t| == 1 {}
-else{
-var t1 := t[..|t|-1];
-var t2 := [t[|t|-1]];
-assert (s + t1) + t2 == s + t;
-MtlrJoinAssoc(Mtlr(s), Mtlr(t1), Mtlr(t2));
+    decreases a.1.0.0, a.1.1.0, b.1.0.0, b.1.1.0, c.1.0.0, c.1.1.0
+    requires |a.1.0.0| == |a.1.1.0| == |b.1.0.0| == |b.1.1.0| == |c.1.0.0| == |c.1.1.0|
+    ensures MtlrJoin(MtlrJoin(a, b), c) == MtlrJoin(a, MtlrJoin(b, c))
+{    if |a.1.0.0| == 0 {}
+    placeholder}}
+
+lemma HomMtlr(s: seq2D, t: seq2D)
+    requires width(s) == width(t)
+    ensures Mtlr(s + t) == MtlrJoin(Mtlr(s), Mtlr(t))
+{
+    if t == [] 
+    {
+        assert s + t == s;
+    }
+    else if |t| == 1 
+    {
+    }
+    else
+    {
+        var t1 := t[..|t|-1];
+        var t2 := [t[|t|-1]];
+        assert (s + t1) + t2 == s + t;
+        MtlrJoinAssoc(Mtlr(s), Mtlr(t1), Mtlr(t2));
+    }
 }
-}
+

@@ -57,16 +57,16 @@ def strip_whitespace(s: str) -> str:
 def test_printing() -> None:
     """Temporary: print the current functions to the file."""
     f = open("output.txt", "w")
-    f.write(format.pp_lifted_function(rec_sum) + "\n")
-    f.write(format.pp_lifted_function(mrr) + "\n")
-    f.write(format.pp_lifted_function(mcr) + "\n")
-    f.write(format.pp_lifted_join(rec_sum) + "\n")
-    f.write(format.pp_assoc_proof(rec_sum) + "\n")
-    f.write(format.pp_hom_proof(rec_sum) + "\n")
-    f.write(format.pp_lifted_function(mtlr) + "\n")
-    f.write(format.pp_lifted_join(mtlr) + "\n")
-    f.write(format.pp_assoc_proof(mtlr) + "\n")
-    f.write(format.pp_hom_proof(mtlr) + "\n")
+    f.write(format.pp_lifted_function(rec_sum) + "\n\n")
+    f.write(format.pp_lifted_function(mrr) + "\n\n")
+    f.write(format.pp_lifted_function(mcr) + "\n\n")
+    f.write(format.pp_lifted_join(rec_sum) + "\n\n")
+    f.write(format.pp_assoc_proof(rec_sum) + "\n\n")
+    f.write(format.pp_hom_proof(rec_sum) + "\n\n")
+    f.write(format.pp_lifted_function(mtlr) + "\n\n")
+    f.write(format.pp_lifted_join(mtlr) + "\n\n")
+    f.write(format.pp_assoc_proof(mtlr) + "\n\n")
+    f.write(format.pp_hom_proof(mtlr) + "\n\n")
 
 
 if __name__ == '__main__':
