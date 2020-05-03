@@ -141,17 +141,6 @@ def pp_assoc_decreases(func: Function) -> str:
     return decreases
 
 
-# def pp_assoc_requires(func: Function) -> str:
-#     """Return a string representation of the precondition of the associativity
-#     lemma for <func>."""
-#     requires = f"{Dafny.REQ}"
-#     sequences = []
-#     for name in ['a', 'b', 'c']:
-#         sequences.extend(pp_all_sequences(func, name))
-#     requires += " == ".join(f"|{seq}|" for seq in sequences)
-#     return requires
-
-
 def pp_assoc_signature(func: Function) -> str:
     """Return a string representation of the signature of the associativity
     lemma for <func>."""
@@ -167,19 +156,28 @@ def pp_assoc_base_case(func: Function) -> str:
     return f"{Dafny.IF} |{sequences[0]}| == 0 {{}}"
 
 
+def pp_assoc_slices(func: Function, name: str) -> str:
+    """Return a string representation of variable declarations corresponding
+    to slices of all sequences in the parameter <name>."""
+    sequences = pp_all_sequences(func, name)
+    slices = ""
+    for seq in sequences:
+        # Remove all periods from the slice name
+        slice_name = seq.replace(".", "") + "'"
+        slices += f"{Dafny.VAR} {slice_name} := {seq}[..|{seq}|-1];\n"
+    return slices
+
+
 def pp_assoc_induction(func: Function) -> str:
     """Return a string representation of the induction step of the associativity
     lemma for <func>."""
     # TODO: fix indentation
     induct = f"{Dafny.ELSE}\n{{\n"
-    sequences = []
-    for name in ['a', 'b', 'c']:
-        sequences.extend(pp_all_sequences(func, name))
-    # For each sequence, make a smaller sequence
-    new_sequences = []
-    # TODO: experiment more with the Dafny implementation before writing this
-    return "placeholder}"
-
+    # Declare slices
+    for name in ["a", "b", "c"]:
+        induct += indent(pp_assoc_slices(func, name))
+    # TODO: use the slices in the induction
+    return induct
 
 def pp_assoc_proof(func: Function) -> str:
     """Return a string representation of the associativity lemma for <func>."""

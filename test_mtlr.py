@@ -67,6 +67,8 @@ def test_printing() -> None:
     f.write(format.pp_lifted_join(mtlr) + "\n\n")
     f.write(format.pp_assoc_proof(mtlr) + "\n\n")
     f.write(format.pp_hom_proof(mtlr) + "\n\n")
+    # Testing this function
+    f.write(" ".join(format.pp_all_sequences(mtlr, "a")) + "\n\n")
 
 
 if __name__ == '__main__':
