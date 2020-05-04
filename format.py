@@ -18,9 +18,10 @@ def indent(s: str) -> str:
 def pp_lifted_function(func: Function) -> str:
     """Return a string corresponding to the lifted version of <func>."""
     signature = pp_function_signature(func)
-    ensures = ""
-    requires = ""
     full = signature
+    if func.decreases:
+        decreases = indent(f"{Dafny.DEC}" + ", ".join(func.decreases))
+        full += f"\n{decreases}"
     if func.ensures:
         ensures = indent(f"{Dafny.ENS} " + ", ".join(func.ensures))
         full += f"\n{ensures}"
@@ -40,6 +41,7 @@ def pp_return(func: Function) -> str:
 
 
 def pp_function_body(func: Function) -> str:
+    """Return a string representing the body of the lifted <func>."""
     body = f"{Dafny.VAR} {func.name}Res := ({func.body});"
     inputs = pp_function_inputs(func, print_type=False)
     for aux in func.aux:
@@ -48,6 +50,9 @@ def pp_function_body(func: Function) -> str:
 
 
 def pp_function_inputs(func: Function, print_type=True) -> str:
+    """Return a string representing the inputs to <func>, as they would appear
+    in the function's signature. If <print_type> is False, the input types
+    are not printed."""
     input_params = ""
     for name, _type in zip(func.param_names, func.param_types):
         if print_type:
@@ -116,7 +121,7 @@ def pp_join_body(func: Function) -> str:
     body = f"{Dafny.VAR} {func.name}Res := ({func.join_body});"
     for i, aux in enumerate(func.aux):
         body += f"\n{Dafny.VAR} {aux.name}Res := " \
-                f"{aux.name}Join(a.{i+1}, b.{i+1});"
+                f"{aux.name}Join(a.{i + 1}, b.{i + 1});"
     return body
 
 

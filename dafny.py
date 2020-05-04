@@ -36,6 +36,8 @@ class Function:
         The (unlifted) return type of the Dafny function.
     lifted_type:
         The lifted return type of the Dafny function.
+    decreases:
+        Decrease measure for the function definition.
     requires:
         A list of the "requires" statements of the function.
     ensures:
@@ -52,6 +54,7 @@ class Function:
     param_types: List[Type]
     return_type: Type
     lifted_type: Type
+    decreases: List[str]
     requires: List[str]
     ensures: List[str]
     aux: List[Function]
@@ -59,14 +62,15 @@ class Function:
     join_body: str
 
     def __init__(self, name: str, param_names: List[str],
-                 param_types: List[Type],
-                 return_type: Type, requires: List[str], ensures: List[str],
+                 param_types: List[Type], return_type: Type,
+                 decreases: List[str], requires: List[str], ensures: List[str],
                  aux: List[Function], body: str, join_body: str) -> None:
         """Initialize this Function with the given information."""
         self.name = name
         self.param_names = param_names
         self.param_types = param_types
         self.return_type = return_type
+        self.decreases = decreases
         self.requires = requires
         self.ensures = ensures
         self.aux = aux
@@ -111,8 +115,9 @@ class Type:
     simple_type:
         If this Type is not a tuple of types, this is its type.
     is_seq:
-        Indicates whether this Type is a simple (seq<int>) type
-
+        Indicates whether this Type is a seq<int> or (seq<int>) type
+    is_int:
+        Indicates whether this Type is an int or (int) type
     === Representation Invariants ===
         - tuple_type is empty if and only if simple_type is not empty.
         - is_seq is True if and only if simple_type is equal to "seq<int>"
