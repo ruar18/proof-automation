@@ -40,6 +40,7 @@ lemma recSumSJoinAssoc(a: (seq<int>), b: (seq<int>), c: (seq<int>)): (seq<int>)
         var a0' := a.0[..|a.0|-1];
         var b0' := b.0[..|b.0|-1];
         var c0' := c.0[..|c.0|-1];
+        recSumSJoinAssoc((a0'), (b0'), (c0'));
 }
 
 lemma HomrecSumS(s: seq2D, t: seq2D)
@@ -90,6 +91,7 @@ lemma MtlrJoinAssoc(a: ((int), ((seq<int>), (seq<int>))), b: ((int), ((seq<int>)
         var b110' := b.1.1.0[..|b.1.1.0|-1];
         var c100' := c.1.0.0[..|c.1.0.0|-1];
         var c110' := c.1.1.0[..|c.1.1.0|-1];
+        MtlrJoinAssoc((((a.0.0), (a100', a110'))), (((b.0.0), (b100', b110'))), (((c.0.0), (c100', c110'))));
 }
 
 lemma HomMtlr(s: seq2D, t: seq2D)
@@ -111,6 +113,4 @@ lemma HomMtlr(s: seq2D, t: seq2D)
         MtlrJoinAssoc(Mtlr(s), Mtlr(t1), Mtlr(t2));
     }
 }
-
-a.1.0.0 a.1.1.0
 

@@ -3,7 +3,7 @@ Functions to format a homomorphism proof for a given Dafny function.
 """
 from __future__ import annotations
 from typing import List, Optional, Union, TextIO
-from dafny import Dafny, Function
+from dafny import Dafny, Function, Type
 import textwrap
 
 INDENT_AMOUNT = 4
@@ -168,6 +168,26 @@ def pp_assoc_slices(func: Function, name: str) -> str:
     return slices
 
 
+def pp_assoc_construct(_type: Type, name: str, prefixes: List[str]) -> str:
+    """Return a string representation of an object of type <_type>,
+    using slices of sequences in the parameter <name>. <prefixes> is
+    a list of strings essentially prepended in front of the results, as
+    required by the recursion."""
+    # Base case
+    if len(_type.tuple_type) <= 1:
+        if str(_type.tuple_type[0]) == Dafny.INT:
+            return f"({'.'.join(prefixes + ['0'])})"
+        # Otherwise, a sequence type, which has been sliced
+        else:
+            return f"{''.join(prefixes + ['0'])}'"
+    # Recursion
+    else:
+        results = []
+        for i, aux in enumerate(_type.tuple_type):
+            results.append(pp_assoc_construct(aux, name, prefixes + [str(i)]))
+        return f"({', '.join(results)})"
+
+
 def pp_assoc_induction(func: Function) -> str:
     """Return a string representation of the induction step of the associativity
     lemma for <func>."""
@@ -176,8 +196,12 @@ def pp_assoc_induction(func: Function) -> str:
     # Declare slices
     for name in ["a", "b", "c"]:
         induct += indent(pp_assoc_slices(func, name))
-    # TODO: use the slices in the induction
+    result = f"({pp_assoc_construct(func.lifted_type, 'a', ['a'])})"
+    # The construction is symmetric with respect to parameter name
+    results = [result] + [result.replace("a", name) for name in ["b", "c"]]
+    induct += indent(f"{func.name}JoinAssoc({', '.join(results)});\n")
     return induct
+
 
 def pp_assoc_proof(func: Function) -> str:
     """Return a string representation of the associativity lemma for <func>."""
