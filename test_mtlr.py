@@ -7,6 +7,7 @@
 
 from dafny import *
 import format
+import proof_print
 import string
 
 seq_2d = Type([], Dafny.SEQ2D)
@@ -20,7 +21,7 @@ _int = Type([_int_simple])
 ####### recSumS definition #######
 rec_sum_body = """if s == [] then [] else if |s| == 1 then preSum(s[0]) else  
     vAdd(recSumS(s[..|s|-1]), preSum(s[|s|-1]))"""
-rec_sum_join = """vAdd(a,b)"""
+rec_sum_join = """vAdd(a, b)"""
 
 rec_sum = Function("recSumS", ["s"], [seq_2d], seq, [],
                    ["|recSumS(s)| == width(s)"], [], rec_sum_body, rec_sum_join)
@@ -39,7 +40,7 @@ mcr_body = """(if s == [] then []  else if |s| == 1 then preSum(s[0]) else
 mcr_join = """pMax(vAdd(a.1, b.0), a.0)"""
 
 mcr = Function("Mcr", ["s"], [seq_2d], seq, [],
-               ["ensures |Mcr(s).0| == width(s)"], [rec_sum], mcr_body, mcr_join)
+               ["|Mcr(s).0| == width(s)"], [rec_sum], mcr_body, mcr_join)
 
 ####### Mtlr definition #######
 mtlr_body = """(if s == [] then 0 else Max(Mtlr(s[..|s|-1]).0, Mrr(s).0))"""
@@ -49,26 +50,16 @@ mtlr = Function("Mtlr", ["s"], [seq_2d], _int, [], [], [mcr], mtlr_body,
                 mtlr_join)
 
 
+all_funcs = [rec_sum, mrr, mcr, mtlr]
+
+
 def strip_whitespace(s: str) -> str:
     """Strips all whitespace from <s>."""
     return s.translate(str.maketrans('', '', string.whitespace))
 
 
 def test_printing() -> None:
-    """Temporary: print the current functions to the file."""
-    f = open("output.txt", "w")
-    f.write(format.pp_lifted_function(rec_sum) + "\n\n")
-    f.write(format.pp_lifted_function(mrr) + "\n\n")
-    f.write(format.pp_lifted_function(mcr) + "\n\n")
-    f.write(format.pp_lifted_join(rec_sum) + "\n\n")
-    f.write(format.pp_assoc_proof(rec_sum) + "\n\n")
-    f.write(format.pp_hom_proof(rec_sum) + "\n\n")
-    f.write(format.pp_lifted_function(mtlr) + "\n\n")
-    f.write(format.pp_lifted_join(mtlr) + "\n\n")
-    f.write(format.pp_assoc_proof(mtlr) + "\n\n")
-    f.write(format.pp_hom_proof(mtlr) + "\n\n")
-    # Testing this function
-    # f.write(" ".join(format.pp_all_sequences(mtlr, "a")) + "\n\n")
+    proof_print.print_all("output.dfy", all_funcs)
 
 
 if __name__ == '__main__':

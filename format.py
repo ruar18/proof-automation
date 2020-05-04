@@ -2,7 +2,7 @@
 Functions to format a homomorphism proof for a given Dafny function.
 """
 from __future__ import annotations
-from typing import List, Optional, Union, TextIO
+from typing import List
 from dafny import Dafny, Function, Type
 import textwrap
 
@@ -93,7 +93,7 @@ def pp_all_sequences(func: Function, name: str) -> List[str]:
     # If the return type is just (seq<int>):
     if func.lifted_type.is_seq:
         indices.append(f"{name}")
-    if func.lifted_type.tuple_type:
+    elif func.lifted_type.tuple_type:
         named_indices = [f"{name}.{idx}" for idx in
                          func.lifted_type.get_seq_indices()]
         indices.extend(named_indices)
@@ -112,11 +112,11 @@ def pp_seq_requires(func: Function, names: List[str]) -> str:
 
 
 def pp_join_body(func: Function) -> str:
-    """Return a string representing the join body for <func>"""
+    """Return a string representing the join body for <func>."""
     body = f"{Dafny.VAR} {func.name}Res := ({func.join_body});"
-    # TODO: fix this, it will fail quite badly with indexing into inputs
-    for aux in func.aux:
-        body += f"\n{Dafny.VAR} {aux.name}Res := ({aux.join_body});"
+    for i, aux in enumerate(func.aux):
+        body += f"\n{Dafny.VAR} {aux.name}Res := " \
+                f"{aux.name}Join(a.{i+1}, b.{i+1});"
     return body
 
 
@@ -146,7 +146,7 @@ def pp_assoc_signature(func: Function) -> str:
     lemma for <func>."""
     _type = func.lifted_type
     return f"{Dafny.LEM} {func.name}JoinAssoc" \
-           f"(a: {_type}, b: {_type}, c: {_type}): {_type}"
+           f"(a: {_type}, b: {_type}, c: {_type})"
 
 
 def pp_assoc_base_case(func: Function) -> str:
@@ -176,10 +176,10 @@ def pp_assoc_construct(_type: Type, name: str, prefixes: List[str]) -> str:
     # Base case
     if len(_type.tuple_type) <= 1:
         if str(_type.tuple_type[0]) == Dafny.INT:
-            return f"({'.'.join(prefixes + ['0'])})"
+            return f"({'.'.join(prefixes)})"
         # Otherwise, a sequence type, which has been sliced
         else:
-            return f"{''.join(prefixes + ['0'])}'"
+            return f"{''.join(prefixes)}'"
     # Recursion
     else:
         results = []
@@ -191,7 +191,6 @@ def pp_assoc_construct(_type: Type, name: str, prefixes: List[str]) -> str:
 def pp_assoc_induction(func: Function) -> str:
     """Return a string representation of the induction step of the associativity
     lemma for <func>."""
-    # TODO: fix indentation
     induct = f"{Dafny.ELSE}\n{{\n"
     # Declare slices
     for name in ["a", "b", "c"]:
@@ -200,7 +199,7 @@ def pp_assoc_induction(func: Function) -> str:
     # The construction is symmetric with respect to parameter name
     results = [result] + [result.replace("a", name) for name in ["b", "c"]]
     induct += indent(f"{func.name}JoinAssoc({', '.join(results)});\n")
-    return induct
+    return induct + "}\n"
 
 
 def pp_assoc_proof(func: Function) -> str:
@@ -212,7 +211,7 @@ def pp_assoc_proof(func: Function) -> str:
     base = indent(pp_assoc_base_case(func))
     induct = indent(pp_assoc_induction(func))
     return f"{signature}\n{decreases}\n{requires}\n{ensures}\n" \
-           f"{{{base}\n{induct}}}"
+           f"{{\n{base}\n{induct}}}"
 
 
 # Homomorphism proof formatting
@@ -252,7 +251,6 @@ def pp_hom_ensures(func: Function) -> str:
 def pp_hom_base_cases() -> str:
     """Return a string corresponding to the empty and singleton base cases
     of a homomorphism proof."""
-    # TODO: fix indentation
     base = f"{Dafny.IF} t == [] \n{{\n"
     base += indent(f"{Dafny.ASRT} s + t == s;\n")
     base += f"}}\n{Dafny.ELSEIF} |t| == 1 \n{{\n}}"
@@ -267,6 +265,7 @@ def pp_hom_induction(func: Function) -> str:
     induct += indent(f"{Dafny.VAR} t2 := [t[|t|-1]];\n")
     induct += indent(f"{Dafny.ASRT} (s + t1) + t2 == s + t;\n")
     name = func.name
+    induct += indent(f"Hom{name}(s, t1);\n")
     induct += indent(f"{name}JoinAssoc({name}(s), {name}(t1), {name}(t2));\n")
     induct += "}"
     return induct

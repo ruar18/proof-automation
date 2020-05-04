@@ -120,11 +120,15 @@ class Type:
     tuple_type: List[Type]
     simple_type: str
     is_seq: bool
+    is_int: bool
 
     def __init__(self, tuple_type: List[Type], simple_type="") -> None:
         self.tuple_type = tuple_type
         self.simple_type = simple_type
-        self.is_seq = (simple_type == "seq<int>")
+        self.is_seq = simple_type == Dafny.SEQ or \
+                      (len(tuple_type) == 1 and tuple_type[0].is_seq)
+        self.is_int = simple_type == Dafny.INT or \
+                      (len(tuple_type) == 1 and tuple_type[0].is_int)
 
     def __str__(self) -> str:
         """Return the string representation of this Type."""
@@ -137,10 +141,11 @@ class Type:
         into every sequence in this Type. Otherwise, return an empty list."""
         indices = []
         for i, _type in enumerate(self.tuple_type):
-            # If this Type is a seq<int> type (not tupled further):
-            if _type.simple_type == Dafny.SEQ:
+            # If this Type is a seq<int> type:
+            if _type.is_seq:
                 indices.append(str(i))
             # Otherwise, recursively get the indices:
-            cur_indices = [f"{i}.{idx}" for idx in _type.get_seq_indices()]
-            indices.extend(cur_indices)
+            elif not _type.is_int:
+                cur_indices = [f"{i}.{idx}" for idx in _type.get_seq_indices()]
+                indices.extend(cur_indices)
         return indices
