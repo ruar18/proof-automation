@@ -2,7 +2,7 @@
 Represent a Dafny program in Python.
 """
 from __future__ import annotations
-from typing import List, Optional, Union, TextIO
+from typing import List
 
 
 class Dafny:
