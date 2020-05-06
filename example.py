@@ -7,9 +7,10 @@
 """
 
 from dafny import *
-import format
 import proof_print
-import string
+import program_loader
+from sexpdata import loads
+import format
 
 seq_2d = Type([], Dafny.SEQ2D)
 seq_simple = Type([], Dafny.SEQ)
@@ -66,6 +67,7 @@ all_funcs = [rec_sum, mrr, mcr, mtlr, mblr]
 
 def test_printing() -> None:
     proof_print.print_all("output.dfy", all_funcs)
+
 
 
 if __name__ == '__main__':

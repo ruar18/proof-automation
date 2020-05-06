@@ -24,5 +24,12 @@ def load_function(func_exp: List[Union[List[Any], Symbol, str]]) -> Function:
     param_types = func_exp[2][1]
     param_names = func_exp[3][1][1]
     return_type = Type([], func_exp[2][2])
-    pass
+    decreases = func_exp[5][1]
+    requires = func_exp[6][1]
+    ensures = func_exp[7][1]
+    aux = func_exp[8][1]
+    body = func_exp[3][1][2]
+    join_body = func_exp[4][1][2]
+    return Function(name, param_names, param_types, return_type,
+                    decreases, requires, ensures, aux, body, join_body)
 
