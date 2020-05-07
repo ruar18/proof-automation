@@ -66,8 +66,9 @@ all_funcs = [rec_sum, mrr, mcr, mtlr, mblr]
 
 
 def test_printing() -> None:
-    proof_print.print_all("output.dfy", all_funcs)
-
+    # proof_print.print_all("output.dfy", all_funcs)
+    program_loader.generate_proof("examples/mtlr_example/example_input.txt",
+                                  "examples/mtlr_example/output.dfy")
 
 
 if __name__ == '__main__':

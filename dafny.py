@@ -6,7 +6,7 @@ from typing import List
 
 
 class Dafny:
-    """Represents Dafny keywords."""
+    """Represents Dafny keywords and types."""
     FUNCTION = "function"
     REQ = "requires"
     ENS = "ensures"

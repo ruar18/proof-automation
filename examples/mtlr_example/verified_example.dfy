@@ -66,15 +66,13 @@ function pMax(s: seq<int>, mc: seq<int>): (seq<int>)
 function recSumS(s: seq2D): (seq<int>)
     ensures |recSumS(s)| == width(s)
 {
-    var recSumSRes := (if s == [] then [] else if |s| == 1 then preSum(s[0]) else
-        vAdd(recSumS(s[..|s|-1]), preSum(s[|s|-1])));
+    var recSumSRes := (if s == [] then [] else if |s| == 1 then preSum(s[0]) else vAdd(recSumS(s[..|s|-1]), preSum(s[|s|-1])));
     (recSumSRes)
 }
 
 function Mrr(s: seq2D): ((int), (seq<int>))
 {
-    var MrrRes := ((if s == [] then 0 else if |s| == 1 then vMax(zeroSeq(|s[|s|-1]|),
-        preSum(s[|s|-1])) else vMax(recSumS(s[..|s|-1]), preSum(s[|s|-1]))));
+    var MrrRes := ((if s == [] then 0 else if |s| == 1 then vMax(zeroSeq(|s[|s|-1]|), preSum(s[|s|-1])) else vMax(recSumS(s[..|s|-1]), preSum(s[|s|-1]))));
     var recSumSRes := recSumS(s);
     (MrrRes, recSumSRes)
 }
@@ -82,8 +80,7 @@ function Mrr(s: seq2D): ((int), (seq<int>))
 function Mcr(s: seq2D): ((seq<int>), (seq<int>))
     ensures |Mcr(s).0| == width(s)
 {
-    var McrRes := ((if s == [] then []  else if |s| == 1 then preSum(s[0]) else
-        pMax(recSumS(s), Mcr(s[..|s|-1]).0)));
+    var McrRes := ((if s == [] then []  else if |s| == 1 then preSum(s[0]) else pMax(recSumS(s), Mcr(s[..|s|-1]).0)));
     var recSumSRes := recSumS(s);
     (McrRes, recSumSRes)
 }
