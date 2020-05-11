@@ -18,6 +18,7 @@ class Dafny:
     IF = "if"
     ELSEIF = "else if"
     ELSE = "else"
+    AND = "&&"
     ASRT = "assert"
     LEM = "lemma"
 
