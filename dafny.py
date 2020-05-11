@@ -2,7 +2,8 @@
 Represent a Dafny program in Python.
 """
 from __future__ import annotations
-from typing import List
+
+from typing import List, Dict
 
 
 class Dafny:
@@ -87,6 +88,28 @@ class Function:
         else:
             aux_types = [func.lifted_type for func in self.aux]
             self.lifted_type = Type([self.return_type] + aux_types)
+
+    def flatten_data(self, prefixes: List[str]) -> Dict[str, str]:
+        """Return a dictionary of pairs (<indexing>, <name>), where <indexing>
+        represents the index into an object of type <self.lifted_type>, and
+        <name> is the name of the function computing the corresponding datum.
+        <prefixes> are prepended to index properly."""
+        cur_unlifted = 0
+        data = {f"{'.'.join(prefixes + [str(cur_unlifted)])}": self.name}
+        for i, aux in enumerate(self.aux):
+            cur_unlifted += 1
+            # If this aux is not lifted:
+            if not aux.aux:
+                data[f"{'.'.join(prefixes + [str(cur_unlifted)])}"] = aux.name
+            else:
+                data.update(aux.flatten_data(prefixes + [str(i + 1)]))
+        return data
+
+    def __str__(self) -> str:
+        """Return a string representation of this Function."""
+        if not self.aux:
+            return self.name
+        return f"({self.name}, {', '.join(str(aux) for aux in self.aux)})"
 
 
 class Variable:

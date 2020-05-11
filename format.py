@@ -2,9 +2,11 @@
 Functions to format a homomorphism proof for a given Dafny function.
 """
 from __future__ import annotations
-from typing import List
-from dafny import Dafny, Function, Type
+
 import textwrap
+from typing import List
+
+from dafny import Dafny, Function, Type
 
 INDENT_AMOUNT = 4
 
@@ -126,26 +128,21 @@ def pp_join_body(func: Function) -> str:
 
 
 # Associativity formatting
-def pp_assoc_requires(func: Function, prefixes : List[str]) -> str:
+def pp_assoc_requires(func: Function) -> str:
     """Return a string representation of the part of the precondition that is
     specific to the associativity proof; namely, a list of strings representing
     that two elements of an argument are identically equal, all joined by
-    conjunction. <prefixes> is a list of strings to be prepended, as required
-    by the recursion."""
+    conjunction."""
     equalities = []
-    full = ""
-    for i, aux_i in enumerate(func.aux):
-        for j, aux_j in enumerate(func.aux[i+1:]):
-            if aux_i == aux_j:
-                cur_name = f"a.{'.'.join(prefixes)}"
-                equalities.append(f"{cur_name}.{i} == {cur_name}.j")
-            elif aux_i.aux:
-                full += pp_assoc_requires(func, prefixes + [str(i)])
-    full += f"{Dafny.AND} {Dafny.AND.join(equalities)}"
-    # If there are no equalities:
+    data = func.flatten_data([])
+    for index_i, name_i in data.items():
+        for index_j, name_j in data.items():
+            if index_i != index_j and index_i < index_j and name_i == name_j:
+                equalities.append(f"a.{index_i} == a.{index_j}")
     if not equalities:
         return ""
     else:
+        full = f" {Dafny.AND} {(' ' + Dafny.AND + ' ').join(equalities)}"
         # The preconditions are symmetric with respect to parameter name
         return full + "".join(full.replace("a", name) for name in ["b", "c"])
 
@@ -262,7 +259,7 @@ def pp_assoc_proof(func: Function) -> str:
     signature = pp_assoc_signature(func)
     decreases = indent(pp_assoc_decreases(func))
     requires = indent(pp_seq_requires(func, ["a", "b", "c"]) +
-                      pp_assoc_requires(func, []))
+                      pp_assoc_requires(func))
     ensures = indent(pp_assoc_ensures(func))
     base = indent(pp_assoc_base_case(func))
     induct = indent(pp_assoc_induction(func))
