@@ -142,7 +142,7 @@ def pp_assoc_decreases(func: Function) -> str:
     sequences = []
     for name in ['a', 'b', 'c']:
         sequences.extend(pp_all_sequences(func, name))
-    decreases += ", ".join(sequences)
+    decreases += ", ".join(f"|{seq}|" for seq in sequences)
     return decreases
 
 
@@ -158,7 +158,8 @@ def pp_assoc_base_case(func: Function) -> str:
     """Return a string representation of the base case of the associativity
     lemma for <func>."""
     sequences = pp_all_sequences(func, "a")
-    return f"{Dafny.IF} |{sequences[0]}| == 0 {{}}"
+    return f"{Dafny.IF} |{sequences[0]}| == 0 {{}}\n" \
+           f"{Dafny.ELSEIF} |{sequences[0]}| == 1 {{}}"
 
 
 def pp_assoc_slices(func: Function, name: str) -> str:
@@ -173,24 +174,49 @@ def pp_assoc_slices(func: Function, name: str) -> str:
     return slices
 
 
-def pp_assoc_construct(_type: Type, name: str, prefixes: List[str]) -> str:
+def pp_assoc_finals(func: Function, name: str) -> str:
+    """Return a string representation of variable declarations corresponding
+    to the final element of all sequences in the parameter <name>."""
+    sequences = pp_all_sequences(func, name)
+    finals = ""
+    for seq in sequences:
+        # Remove all periods from the slice name
+        final_name = seq.replace(".", "") + "f"
+        finals += f"{Dafny.VAR} {final_name} := [{seq}[|{seq}|-1]];\n"
+    return finals
+
+
+def pp_assoc_construct(_type: Type, name: str, prefixes: List[str],
+                       suffix: str) -> str:
     """Return a string representation of an object of type <_type>,
-    using slices of sequences in the parameter <name>. <prefixes> is
-    a list of strings essentially prepended in front of the results, as
-    required by the recursion."""
+    using slices/final elements of sequences in the parameter <name>.
+    <prefixes> is  a list of strings prepended in front of the results, as
+    required by the recursion. <suffix> indicates whether the object is
+    constructed from slices or final elements."""
     # Base case
     if len(_type.tuple_type) <= 1:
         if str(_type.tuple_type[0]) == Dafny.INT:
             return f"({'.'.join(prefixes)})"
         # Otherwise, a sequence type, which has been sliced
         else:
-            return f"{''.join(prefixes)}'"
+            return f"{''.join(prefixes)}{suffix}"
     # Recursion
     else:
         results = []
         for i, aux in enumerate(_type.tuple_type):
-            results.append(pp_assoc_construct(aux, name, prefixes + [str(i)]))
+            results.append(pp_assoc_construct(aux, name, prefixes + [str(i)],
+                                              suffix))
         return f"({', '.join(results)})"
+
+
+def pp_assoc_recursive_call(func: Function, suffix: str) -> str:
+    """Return a string representation of the recursive call used in the
+    induction step of the associativity proof. <suffix> is "'" if we recurse on
+    sequence slices, and "f" if we recurse on final elements of sequences."""
+    result = f"({pp_assoc_construct(func.lifted_type, 'a', ['a'], suffix)})"
+    # The construction is symmetric with respect to parameter name
+    results = [result] + [result.replace("a", name) for name in ["b", "c"]]
+    return f"{func.name}JoinAssoc({', '.join(results)});\n"
 
 
 def pp_assoc_induction(func: Function) -> str:
@@ -200,10 +226,10 @@ def pp_assoc_induction(func: Function) -> str:
     # Declare slices
     for name in ["a", "b", "c"]:
         induct += indent(pp_assoc_slices(func, name))
-    result = f"({pp_assoc_construct(func.lifted_type, 'a', ['a'])})"
-    # The construction is symmetric with respect to parameter name
-    results = [result] + [result.replace("a", name) for name in ["b", "c"]]
-    induct += indent(f"{func.name}JoinAssoc({', '.join(results)});\n")
+    induct += indent(pp_assoc_recursive_call(func, "'") + "\n")
+    for name in ["a", "b", "c"]:
+        induct += indent(pp_assoc_finals(func, name))
+    induct += indent(pp_assoc_recursive_call(func, "f"))
     return induct + "}\n"
 
 

@@ -78,41 +78,54 @@ function MblrJoin(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>))): ((s
 }
 
 lemma recSumSJoinAssoc(a: (seq<int>), b: (seq<int>), c: (seq<int>))
-    decreases a, b, c
+    decreases |a|, |b|, |c|
     requires |a| == |b| == |c|
     ensures recSumSJoin(recSumSJoin(a, b), c) == recSumSJoin(a, recSumSJoin(b, c))
 {
     if |a| == 0 {}
+    else if |a| == 1 {}
     else
     {
         var a' := a[..|a|-1];
         var b' := b[..|b|-1];
         var c' := c[..|c|-1];
         recSumSJoinAssoc((a'), (b'), (c'));
+
+        var af := [a[|a|-1]];
+        var bf := [b[|b|-1]];
+        var cf := [c[|c|-1]];
+        recSumSJoinAssoc((af), (bf), (cf));
     }
 }
 
 lemma MrrJoinAssoc(a: ((int), (seq<int>)), b: ((int), (seq<int>)), c: ((int), (seq<int>)))
-    decreases a.1, b.1, c.1
+    decreases |a.1|, |b.1|, |c.1|
     requires |a.1| == |b.1| == |c.1|
     ensures MrrJoin(MrrJoin(a, b), c) == MrrJoin(a, MrrJoin(b, c))
 {
     if |a.1| == 0 {}
+    else if |a.1| == 1 {}
     else
     {
         var a1' := a.1[..|a.1|-1];
         var b1' := b.1[..|b.1|-1];
         var c1' := c.1[..|c.1|-1];
         MrrJoinAssoc((((a.0), a1')), (((b.0), b1')), (((c.0), c1')));
+
+        var a1f := [a.1[|a.1|-1]];
+        var b1f := [b.1[|b.1|-1]];
+        var c1f := [c.1[|c.1|-1]];
+        MrrJoinAssoc((((a.0), a1f)), (((b.0), b1f)), (((c.0), c1f)));
     }
 }
 
 lemma McrJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: ((seq<int>), (seq<int>)))
-    decreases a.0, a.1, b.0, b.1, c.0, c.1
+    decreases |a.0|, |a.1|, |b.0|, |b.1|, |c.0|, |c.1|
     requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1|
     ensures McrJoin(McrJoin(a, b), c) == McrJoin(a, McrJoin(b, c))
 {
     if |a.0| == 0 {}
+    else if |a.0| == 1 {}
     else
     {
         var a0' := a.0[..|a.0|-1];
@@ -122,15 +135,24 @@ lemma McrJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: 
         var c0' := c.0[..|c.0|-1];
         var c1' := c.1[..|c.1|-1];
         McrJoinAssoc(((a0', a1')), ((b0', b1')), ((c0', c1')));
+
+        var a0f := [a.0[|a.0|-1]];
+        var a1f := [a.1[|a.1|-1]];
+        var b0f := [b.0[|b.0|-1]];
+        var b1f := [b.1[|b.1|-1]];
+        var c0f := [c.0[|c.0|-1]];
+        var c1f := [c.1[|c.1|-1]];
+        McrJoinAssoc(((a0f, a1f)), ((b0f, b1f)), ((c0f, c1f)));
     }
 }
 
 lemma MtlrJoinAssoc(a: ((int), ((seq<int>), (seq<int>))), b: ((int), ((seq<int>), (seq<int>))), c: ((int), ((seq<int>), (seq<int>))))
-    decreases a.1.0, a.1.1, b.1.0, b.1.1, c.1.0, c.1.1
+    decreases |a.1.0|, |a.1.1|, |b.1.0|, |b.1.1|, |c.1.0|, |c.1.1|
     requires |a.1.0| == |a.1.1| == |b.1.0| == |b.1.1| == |c.1.0| == |c.1.1|
     ensures MtlrJoin(MtlrJoin(a, b), c) == MtlrJoin(a, MtlrJoin(b, c))
 {
     if |a.1.0| == 0 {}
+    else if |a.1.0| == 1 {}
     else
     {
         var a10' := a.1.0[..|a.1.0|-1];
@@ -140,15 +162,24 @@ lemma MtlrJoinAssoc(a: ((int), ((seq<int>), (seq<int>))), b: ((int), ((seq<int>)
         var c10' := c.1.0[..|c.1.0|-1];
         var c11' := c.1.1[..|c.1.1|-1];
         MtlrJoinAssoc((((a.0), (a10', a11'))), (((b.0), (b10', b11'))), (((c.0), (c10', c11'))));
+
+        var a10f := [a.1.0[|a.1.0|-1]];
+        var a11f := [a.1.1[|a.1.1|-1]];
+        var b10f := [b.1.0[|b.1.0|-1]];
+        var b11f := [b.1.1[|b.1.1|-1]];
+        var c10f := [c.1.0[|c.1.0|-1]];
+        var c11f := [c.1.1[|c.1.1|-1]];
+        MtlrJoinAssoc((((a.0), (a10f, a11f))), (((b.0), (b10f, b11f))), (((c.0), (c10f, c11f))));
     }
 }
 
 lemma MblrJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: ((seq<int>), (seq<int>)))
-    decreases a.0, a.1, b.0, b.1, c.0, c.1
+    decreases |a.0|, |a.1|, |b.0|, |b.1|, |c.0|, |c.1|
     requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1|
     ensures MblrJoin(MblrJoin(a, b), c) == MblrJoin(a, MblrJoin(b, c))
 {
     if |a.0| == 0 {}
+    else if |a.0| == 1 {}
     else
     {
         var a0' := a.0[..|a.0|-1];
@@ -158,6 +189,14 @@ lemma MblrJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c:
         var c0' := c.0[..|c.0|-1];
         var c1' := c.1[..|c.1|-1];
         MblrJoinAssoc(((a0', a1')), ((b0', b1')), ((c0', c1')));
+
+        var a0f := [a.0[|a.0|-1]];
+        var a1f := [a.1[|a.1|-1]];
+        var b0f := [b.0[|b.0|-1]];
+        var b1f := [b.1[|b.1|-1]];
+        var c0f := [c.0[|c.0|-1]];
+        var c1f := [c.1[|c.1|-1]];
+        MblrJoinAssoc(((a0f, a1f)), ((b0f, b1f)), ((c0f, c1f)));
     }
 }
 
