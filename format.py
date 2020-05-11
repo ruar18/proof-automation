@@ -279,7 +279,6 @@ def pp_hom_proof(func: Function) -> str:
     full = f"{signature}\n{requires}\n{ensures}\n"
     full += indent(f"{{{base}\n{induct}\n}}")
     return f"{signature}\n{requires}\n{ensures}\n{{\n{base}\n{induct}\n}}"
-    # return full
 
 
 def pp_hom_signature(func: Function) -> str:
