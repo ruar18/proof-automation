@@ -2,7 +2,7 @@
 Load a Dafny program from S-expressions representing the program.
 """
 from typing import List, Union, Any, Dict
-from dafny import Function, Type
+from dafny import Function, Type, Dafny
 from sexpdata import Symbol, loads
 from proof_print import print_all
 
@@ -50,10 +50,10 @@ def load_function(func_exp: List[Union[List[Any], Symbol, str]],
     ]
     """
     name = func_exp[1].value()
-    param_types = func_exp[2][1]
-    param_names = func_exp[3][1][1]
-    return_type = Type([Type([], func_exp[2][2])])
-    decreases = func_exp[5][1]
+    param_types = [eval(_type.value()) for _type in func_exp[2][1]]
+    param_names = [param.value() for param in func_exp[3][1][1]]
+    return_type = Type([Type([], eval(func_exp[2][2].value()))])
+    decreases = [dec.value() for dec in func_exp[5][1]]
     requires = func_exp[6][1]
     ensures = func_exp[7][1]
     aux_names = [symbol.value() for symbol in func_exp[8][1]]

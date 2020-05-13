@@ -22,7 +22,7 @@ def pp_lifted_function(func: Function) -> str:
     signature = pp_function_signature(func)
     full = signature
     if func.decreases:
-        decreases = indent(f"{Dafny.DEC}" + ", ".join(func.decreases))
+        decreases = indent(f"{Dafny.DEC} " + ", ".join(func.decreases))
         full += f"\n{decreases}"
     if func.ensures:
         ensures = indent(f"{Dafny.ENS} " + ", ".join(func.ensures))

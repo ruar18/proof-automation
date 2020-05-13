@@ -6,7 +6,7 @@ function ls(s: seq2D): (seq<int>)
 }
 
 function mbl(s: seq2D): ((seq<int>), (seq<int>))
-    decreases|s|
+    decreases |s|
     ensures |mbl(s).0| == width(s)
 {
     var mblRes := (if s == [] then [] else if |s| == 1 then pMax(preSum(s[0]), zeroSeq(|s[0]|))
@@ -16,7 +16,7 @@ function mbl(s: seq2D): ((seq<int>), (seq<int>))
 }
 
 function mtl(s: seq2D): ((seq<int>), (seq<int>))
-    decreases|s|
+    decreases |s|
     ensures |mtl(s).0| == width(s)
 {
     var mtlRes := (if s == [] then [] else if |s| == 1 then pMax(preSum(s[0]), zeroSeq(|s[0]|))
@@ -26,7 +26,7 @@ function mtl(s: seq2D): ((seq<int>), (seq<int>))
 }
 
 function ml(s: seq2D): ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>)))
-    decreases|s|
+    decreases |s|
     ensures |ml(s).0| == width(s)
 {
     var mlRes := (if s == [] then [] else if |s| == 1 then pMax(preSum(s[0]), zeroSeq(|s[0]|))

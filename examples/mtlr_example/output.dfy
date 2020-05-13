@@ -28,7 +28,7 @@ function Mtlr(s: seq2D): ((int), ((seq<int>), (seq<int>)))
 }
 
 function Mblr(s: seq2D): ((seq<int>), (seq<int>))
-    decreases|s|
+    decreases |s|
 {
     var MblrRes := ((if s == [] then zeroSeq(width(s))
                     else if |s| == 1 then pMax(zeroSeq(|s[|s|-1]|), preSum(s[|s|-1]))
