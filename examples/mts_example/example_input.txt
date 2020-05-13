@@ -1,0 +1,18 @@
+((functions Sum Mts)
+(definition Sum
+    (type (Dafny.SEQ) Dafny.INT)
+    (body (function (s) "if s == [] then 0 else Sum(s[..|s|-1]) + s[|s|-1]"))
+    (join (function (a b) "a + b"))
+    (decreases ())
+    (requires ())
+    (ensures ())
+    (aux ()))
+(definition Mts
+    (type (Dafny.SEQ) Dafny.INT)
+    (body (function (s) "if s == [] then 0 else Max(Mts(s[..|s|-1]).0 + s[|s|-1], 0)"))
+    (join (function (a b) "Max(b.0, a.0 + b.1)"))
+    (decreases ())
+    (requires ())
+    (ensures ())
+    (aux (Sum)))
+)

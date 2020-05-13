@@ -70,7 +70,7 @@ function mlJoin(a: ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>
 
 lemma lsJoinAssoc(a: (seq<int>), b: (seq<int>), c: (seq<int>))
     decreases |a|, |b|, |c|
-    requires |a| == |b| == |c|
+    requires |a| == |b| == |c| 
     ensures lsJoin(lsJoin(a, b), c) == lsJoin(a, lsJoin(b, c))
 {
     if |a| == 0 {}
@@ -91,7 +91,7 @@ lemma lsJoinAssoc(a: (seq<int>), b: (seq<int>), c: (seq<int>))
 
 lemma mblJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: ((seq<int>), (seq<int>)))
     decreases |a.0|, |a.1|, |b.0|, |b.1|, |c.0|, |c.1|
-    requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1|
+    requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1| 
     ensures mblJoin(mblJoin(a, b), c) == mblJoin(a, mblJoin(b, c))
 {
     if |a.0| == 0 {}
@@ -118,7 +118,7 @@ lemma mblJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: 
 
 lemma mtlJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: ((seq<int>), (seq<int>)))
     decreases |a.0|, |a.1|, |b.0|, |b.1|, |c.0|, |c.1|
-    requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1|
+    requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1| 
     ensures mtlJoin(mtlJoin(a, b), c) == mtlJoin(a, mtlJoin(b, c))
 {
     if |a.0| == 0 {}
@@ -145,7 +145,7 @@ lemma mtlJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: 
 
 lemma mlJoinAssoc(a: ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>))), b: ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>))), c: ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>))))
     decreases |a.0|, |a.1.0|, |a.1.1|, |a.2.0|, |a.2.1|, |b.0|, |b.1.0|, |b.1.1|, |b.2.0|, |b.2.1|, |c.0|, |c.1.0|, |c.1.1|, |c.2.0|, |c.2.1|
-    requires |a.0| == |a.1.0| == |a.1.1| == |a.2.0| == |a.2.1| == |b.0| == |b.1.0| == |b.1.1| == |b.2.0| == |b.2.1| == |c.0| == |c.1.0| == |c.1.1| == |c.2.0| == |c.2.1| && a.1.1 == a.2.1 && b.1.1 == b.2.1 && c.1.1 == c.2.1
+    requires |a.0| == |a.1.0| == |a.1.1| == |a.2.0| == |a.2.1| == |b.0| == |b.1.0| == |b.1.1| == |b.2.0| == |b.2.1| == |c.0| == |c.1.0| == |c.1.1| == |c.2.0| == |c.2.1|  && a.1.1 == a.2.1 && b.1.1 == b.2.1 && c.1.1 == c.2.1
     ensures mlJoin(mlJoin(a, b), c) == mlJoin(a, mlJoin(b, c))
 {
     if |a.0| == 0 {}

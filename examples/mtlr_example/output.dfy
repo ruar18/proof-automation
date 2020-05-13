@@ -79,7 +79,7 @@ function MblrJoin(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>))): ((s
 
 lemma recSumSJoinAssoc(a: (seq<int>), b: (seq<int>), c: (seq<int>))
     decreases |a|, |b|, |c|
-    requires |a| == |b| == |c|
+    requires |a| == |b| == |c| 
     ensures recSumSJoin(recSumSJoin(a, b), c) == recSumSJoin(a, recSumSJoin(b, c))
 {
     if |a| == 0 {}
@@ -100,7 +100,7 @@ lemma recSumSJoinAssoc(a: (seq<int>), b: (seq<int>), c: (seq<int>))
 
 lemma MrrJoinAssoc(a: ((int), (seq<int>)), b: ((int), (seq<int>)), c: ((int), (seq<int>)))
     decreases |a.1|, |b.1|, |c.1|
-    requires |a.1| == |b.1| == |c.1|
+    requires |a.1| == |b.1| == |c.1| 
     ensures MrrJoin(MrrJoin(a, b), c) == MrrJoin(a, MrrJoin(b, c))
 {
     if |a.1| == 0 {}
@@ -121,7 +121,7 @@ lemma MrrJoinAssoc(a: ((int), (seq<int>)), b: ((int), (seq<int>)), c: ((int), (s
 
 lemma McrJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: ((seq<int>), (seq<int>)))
     decreases |a.0|, |a.1|, |b.0|, |b.1|, |c.0|, |c.1|
-    requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1|
+    requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1| 
     ensures McrJoin(McrJoin(a, b), c) == McrJoin(a, McrJoin(b, c))
 {
     if |a.0| == 0 {}
@@ -148,7 +148,7 @@ lemma McrJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: 
 
 lemma MtlrJoinAssoc(a: ((int), ((seq<int>), (seq<int>))), b: ((int), ((seq<int>), (seq<int>))), c: ((int), ((seq<int>), (seq<int>))))
     decreases |a.1.0|, |a.1.1|, |b.1.0|, |b.1.1|, |c.1.0|, |c.1.1|
-    requires |a.1.0| == |a.1.1| == |b.1.0| == |b.1.1| == |c.1.0| == |c.1.1|
+    requires |a.1.0| == |a.1.1| == |b.1.0| == |b.1.1| == |c.1.0| == |c.1.1| 
     ensures MtlrJoin(MtlrJoin(a, b), c) == MtlrJoin(a, MtlrJoin(b, c))
 {
     if |a.1.0| == 0 {}
@@ -175,7 +175,7 @@ lemma MtlrJoinAssoc(a: ((int), ((seq<int>), (seq<int>))), b: ((int), ((seq<int>)
 
 lemma MblrJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: ((seq<int>), (seq<int>)))
     decreases |a.0|, |a.1|, |b.0|, |b.1|, |c.0|, |c.1|
-    requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1|
+    requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1| 
     ensures MblrJoin(MblrJoin(a, b), c) == MblrJoin(a, MblrJoin(b, c))
 {
     if |a.0| == 0 {}

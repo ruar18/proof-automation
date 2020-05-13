@@ -77,12 +77,12 @@ def pp_function_signature(func: Function) -> str:
 def pp_lifted_join(func: Function) -> str:
     """Return a string corresponding to the lifted join of <func>."""
     signature = pp_join_signature(func)
-    requires = indent(pp_seq_requires(func, ["a", "b"]))
+    requires = pp_seq_requires(func, ["a", "b"])
     body = indent(pp_join_body(func))
     full = signature
     return_line = indent(pp_return(func))
     if requires:
-        full += f"\n{requires}"
+        full += indent(f"\n{Dafny.REQ} {requires}")
     full += f"\n{{\n{body}\n{return_line}\n}}"
     return full
 
@@ -110,7 +110,7 @@ def pp_all_sequences(func: Function, name: str) -> List[str]:
 def pp_seq_requires(func: Function, names: List[str]) -> str:
     """Return a string representing the preconditions for the join/associativity
     lemma of <func>, for the parameter names in <names>"""
-    requires = f"{Dafny.REQ} "
+    requires = ""
     sequences = []
     for name in names:
         sequences.extend(pp_all_sequences(func, name))
@@ -257,10 +257,13 @@ def pp_assoc_induction(func: Function) -> str:
 def pp_assoc_proof(func: Function) -> str:
     """Return a string representation of the associativity lemma for <func>."""
     signature = pp_assoc_signature(func)
-    decreases = indent(pp_assoc_decreases(func))
-    requires = indent(pp_seq_requires(func, ["a", "b", "c"]) +
-                      pp_assoc_requires(func))
     ensures = indent(pp_assoc_ensures(func))
+    # If the function does not return any sequence:
+    if not func.lifted_type.get_seq_indices():
+        return f"{signature}\n{ensures}\n{{\n}}"
+    decreases = indent(pp_assoc_decreases(func))
+    requires = indent(f"{Dafny.REQ} {pp_seq_requires(func, ['a', 'b', 'c'])}"
+                      f" {pp_assoc_requires(func)}")
     base = indent(pp_assoc_base_case(func))
     induct = indent(pp_assoc_induction(func))
     return f"{signature}\n{decreases}\n{requires}\n{ensures}\n" \
@@ -272,25 +275,28 @@ def pp_hom_proof(func: Function) -> str:
     """Return a string corresponding to the homomorphism proof of the
     Dafny function <func>."""
     signature = pp_hom_signature(func)
-    requires = indent(pp_hom_requires())
+    requires = indent(pp_hom_requires(func))
     ensures = indent(pp_hom_ensures(func))
     base = indent(pp_hom_base_cases())
     induct = indent(pp_hom_induction(func))
-    full = f"{signature}\n{requires}\n{ensures}\n"
-    full += indent(f"{{{base}\n{induct}\n}}")
-    return f"{signature}\n{requires}\n{ensures}\n{{\n{base}\n{induct}\n}}"
+    if requires:
+        return f"{signature}\n{requires}\n{ensures}\n{{\n{base}\n{induct}\n}}"
+    return f"{signature}\n{ensures}\n{{\n{base}\n{induct}\n}}"
 
 
 def pp_hom_signature(func: Function) -> str:
     """Return a string corresponding to the signature of the homomorphism proof
     of <func>."""
-    return f"{Dafny.LEM} Hom{func.name}(s: {Dafny.SEQ2D}, t: {Dafny.SEQ2D})"
+    return f"{Dafny.LEM} Hom{func.name}(s: {func.param_types[0]}, " \
+           f"t: {func.param_types[0]})"
 
 
-def pp_hom_requires() -> str:
+def pp_hom_requires(func: Function) -> str:
     """Return a string corresponding to the precondition of a homomorphism
     proof."""
-    return f"{Dafny.REQ} width(s) == width(t)"
+    if func.param_types[0] == Dafny.SEQ2D:
+        return f"{Dafny.REQ} width(s) == width(t)"
+    return ""
 
 
 def pp_hom_ensures(func: Function) -> str:

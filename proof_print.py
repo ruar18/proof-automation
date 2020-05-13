@@ -15,7 +15,9 @@ def print_result(file_name: str, funcs: List[Function],
     to the file named <file_name>."""
     f = open(file_name, "a")
     for func in funcs:
-        f.write(to_call(func) + "\n\n")
+        result = to_call(func)
+        if result:
+            f.write(to_call(func) + "\n\n")
 
 
 def print_all(file_name: str, funcs: List[Function]) -> None:
