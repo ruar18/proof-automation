@@ -2,8 +2,10 @@
 Load a Dafny program from S-expressions representing the program.
 """
 from typing import List, Union, Any, Dict
-from dafny import Function, Type, Dafny
+
 from sexpdata import Symbol, loads
+
+from dafny import Function, Type, Dafny
 from proof_print import print_all
 
 
@@ -14,29 +16,27 @@ def generate_proof(input_name: str, output_name: str) -> None:
     f = open(input_name, "r")
     contents = f"({f.read()})".replace('{', '"').replace('}', '"')
     parsed = loads(contents)
-    func_names = _read_functions(parsed[0])
+    aux_dict = _read_functions(parsed[0])
     funcs = []
-    aux_dict = {}
-    # TODO: find a more elegant solution
     for definition in parsed[1:]:
-        cur_func = _load_function(definition, avail_aux=aux_dict)
+        cur_func = _load_function(definition, avail_aux=funcs, indices=aux_dict)
         funcs.append(cur_func)
-        aux_dict[cur_func.name] = cur_func
 
-    for name in func_names:
+    for name in aux_dict:
         if name not in aux_dict:
-            print(f"Function {name} has not been declared.")
+            print(f"Function {name} was not defined.")
 
     print_all(output_name, funcs)
 
 
-def _read_functions(func_list: List[Union[List[Any], Symbol, str]]) -> List[str]:
-    """Construct a list of function names from the parsed S-expression
-    <func_list> representing a list of functions.
+def _read_functions(func_list: List[Union[List[Any], Symbol, str]]) \
+        -> Dict[str, int]:
+    """Construct a dictionary of (name, index) pairs from the parsed
+    S-expression <func_list> representing a list of functions.
     Format of <func_list>:
     ["functions", <functions>]
     """
-    return [func_symbol.value() for func_symbol in func_list[1:]]
+    return {name.value(): i for (i, name) in enumerate(func_list[1:])}
 
 
 def _get_strings(lst: List[Symbol]) -> List[str]:
@@ -45,10 +45,12 @@ def _get_strings(lst: List[Symbol]) -> List[str]:
 
 
 def _load_function(func_exp: List[Union[List[Any], Symbol, str]],
-                   avail_aux: Dict[str, Function]) -> Function:
+                   avail_aux: List[Function], indices: Dict[str, int]) \
+        -> Function:
     """Construct a Dafny Function from the parsed S-expression <func_exp>
-    representing the function definition. <avail_aux> is a dictionary
-    {name: function} of functions already defined.
+    representing the function definition. <avail_aux> is a list of functions
+    that have already been defined, and <indices> is a dictionary of
+    (name, index) pairs, where the indices are into <avail_aux>.
     Format of <func_exp>:
     ["definition", <name>,
         ["type", [<param_types>], <return_type>],
@@ -74,14 +76,10 @@ def _load_function(func_exp: List[Union[List[Any], Symbol, str]],
         join_body = func_exp[4][1][2]
         aux = []
         for cur in aux_names:
-            aux.append(avail_aux[cur])
-    except (IndexError, KeyError) as e:
-        if e == IndexError:
-            print(f"Unrecognized input format.")
-        else:
-            print(f"Auxiliary function has not been defined.")
+            aux.append(avail_aux[indices[cur]])
+    except IndexError:
+        print(f"Unrecognized input format.")
     else:
         return Function(name, param_names, param_types, return_type,
                         decreases, requires, ensures, aux, body,
                         join_param_names, join_body)
-

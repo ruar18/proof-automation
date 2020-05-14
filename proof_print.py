@@ -1,7 +1,9 @@
 """Functions to print the proofs for the given Dafny functions."""
 from __future__ import annotations
+
 from typing import List, Callable
-from dafny import Dafny, Function, Type
+
+from dafny import Function
 from format import pp_lifted_function, pp_lifted_join, pp_assoc_proof, \
     pp_hom_proof
 

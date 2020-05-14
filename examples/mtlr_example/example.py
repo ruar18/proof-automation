@@ -6,7 +6,6 @@
     - Mblr
 """
 
-from dafny import *
 import program_loader
 
 
