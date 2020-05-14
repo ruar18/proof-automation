@@ -14,12 +14,10 @@ function zeroSeq(w: int): seq<int>
 	if w == 0 then [] else zeroSeq(w-1) + [0]
 }
 
-
 function Max(x: int, y: int): int
 {
   if x < y then y else x
 }
-
 
 function SeqMax(s: seq<int>): int
 {
@@ -32,14 +30,12 @@ function Sum(s: seq<int>): int
     Sum(s[..|s|-1]) + s[|s|-1]
 }
 
-
 function preSum(s: seq<int>): seq<int>
 ensures |s| == |preSum(s)|
 {
   if s == [] then [] else
     preSum(s[..|s|-1]) + [Sum(s)]
 }
-
 
 function vAdd(s: seq<int>, t: seq<int>): seq<int>
 	requires |s| == |t|
@@ -49,14 +45,12 @@ function vAdd(s: seq<int>, t: seq<int>): seq<int>
     vAdd(s[..|s|-1], t[..|t|-1]) + [s[|s|-1] + t[|t|-1]]
 }
 
-
 function vMax(s: seq<int>, r: seq<int>): int
 	requires |s| == |r|
 {
   if s == [] then 0 else
     Max(vMax(s[..|s|-1], r[..|r|-1]), s[|s|-1] + r[|r|-1])
 }
-
 
 function pMax(s: seq<int>, mc: seq<int>): seq<int>
 	requires |s| ==  |mc|
@@ -68,199 +62,203 @@ function pMax(s: seq<int>, mc: seq<int>): seq<int>
 
 
 // Code below is generated automatically
-function ls(s: seq2D): (seq<int>)
-    ensures |ls(s)| == width(s)
+function Ls(s: seq2D): seq<int>
+    ensures |Ls(s)| == width(s)
 {
-    var lsRes := (if s == [] then [] else if |s| == 1 then preSum(s[0]) else vAdd(ls(s[..|s|-1]), preSum(s[|s|-1])));
-    (lsRes)
+    var LsRes := if s == [] then [] else if |s| == 1 then preSum(s[0]) else vAdd(Ls(s[..|s|-1]), preSum(s[|s|-1]));
+    (LsRes)
 }
 
-function mbl(s: seq2D): ((seq<int>), (seq<int>))
-    decreases|s|
-    ensures |mbl(s).0| == width(s)
+function Mbl(s: seq2D): (seq<int>, seq<int>)
+    decreases |s|
+    ensures |Mbl(s).0| == width(s)
 {
-    var mblRes := (if s == [] then [] else if |s| == 1 then pMax(preSum(s[0]), zeroSeq(|s[0]|))
-        else pMax(mbl([s[|s|-1]]).0, vAdd(mbl(s[..|s|-1]).0, preSum(s[|s|-1]))));
-    var lsRes := ls(s);
-    (mblRes, lsRes)
+    var MblRes := if s == [] then [] else if |s| == 1 then pMax(preSum(s[0]), zeroSeq(|s[0]|))
+        else pMax(Mbl([s[|s|-1]]).0, vAdd(Mbl(s[..|s|-1]).0, preSum(s[|s|-1])));
+    var LsRes := Ls(s);
+    (MblRes, LsRes)
 }
 
-function mtl(s: seq2D): ((seq<int>), (seq<int>))
-    decreases|s|
-    ensures |mtl(s).0| == width(s)
+function Mtl(s: seq2D): (seq<int>, seq<int>)
+    decreases |s|
+    ensures |Mtl(s).0| == width(s)
 {
-    var mtlRes := (if s == [] then [] else if |s| == 1 then pMax(preSum(s[0]), zeroSeq(|s[0]|))
-        else pMax(mtl(s[..|s|-1]).0, vAdd(mtl([s[|s|-1]]).0, ls(s[..|s|-1]))));
-    var lsRes := ls(s);
-    (mtlRes, lsRes)
+    var MtlRes := if s == [] then [] else if |s| == 1 then pMax(preSum(s[0]), zeroSeq(|s[0]|))
+        else pMax(Mtl(s[..|s|-1]).0, vAdd(Mtl([s[|s|-1]]).0, Ls(s[..|s|-1])));
+    var LsRes := Ls(s);
+    (MtlRes, LsRes)
 }
 
-function ml(s: seq2D): ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>)))
-    decreases|s|
-    ensures |ml(s).0| == width(s)
+function Ml(s: seq2D): (seq<int>, (seq<int>, seq<int>), (seq<int>, seq<int>))
+    decreases |s|
+    ensures |Ml(s).0| == width(s)
 {
-    var mlRes := (if s == [] then [] else if |s| == 1 then pMax(preSum(s[0]), zeroSeq(|s[0]|))
-                                else pMax(pMax(ml(s[..|s|-1]).0, ml([s[|s|-1]]).0), vAdd(mbl(s[..|s|-1]).0, mtl([s[|s|-1]]).0)));
-    var mblRes := mbl(s);
-    var mtlRes := mtl(s);
-    (mlRes, mblRes, mtlRes)
+    var MlRes := if s == [] then [] else if |s| == 1 then pMax(preSum(s[0]), zeroSeq(|s[0]|))
+        else pMax(pMax(Ml(s[..|s|-1]).0, Ml([s[|s|-1]]).0), vAdd(Mbl(s[..|s|-1]).0, Mtl([s[|s|-1]]).0));
+    var MblRes := Mbl(s);
+    var MtlRes := Mtl(s);
+    (MlRes, MblRes, MtlRes)
 }
 
-function lsJoin(a: (seq<int>), b: (seq<int>)): (seq<int>)
+function LsJoin(a: seq<int>, b: seq<int>): seq<int>
     requires |a| == |b|
 {
-    var lsRes := (vAdd(a, b));
-    (lsRes)
+    var LsRes := vAdd(a, b);
+    (LsRes)
 }
 
-function mblJoin(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>))): ((seq<int>), (seq<int>))
+function MblJoin(a: (seq<int>, seq<int>), b: (seq<int>, seq<int>)): (seq<int>, seq<int>)
     requires |a.0| == |a.1| == |b.0| == |b.1|
 {
-    var mblRes := (pMax(b.0, vAdd(a.0, b.1)));
-    var lsRes := lsJoin(a.1, b.1);
-    (mblRes, lsRes)
+    var MblRes := pMax(b.0, vAdd(a.0, b.1));
+    var LsRes := LsJoin(a.1, b.1);
+    (MblRes, LsRes)
 }
 
-function mtlJoin(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>))): ((seq<int>), (seq<int>))
+function MtlJoin(a: (seq<int>, seq<int>), b: (seq<int>, seq<int>)): (seq<int>, seq<int>)
     requires |a.0| == |a.1| == |b.0| == |b.1|
 {
-    var mtlRes := (pMax(a.0, vAdd(b.0, a.1)));
-    var lsRes := lsJoin(a.1, b.1);
-    (mtlRes, lsRes)
+    var MtlRes := pMax(a.0, vAdd(b.0, a.1));
+    var LsRes := LsJoin(a.1, b.1);
+    (MtlRes, LsRes)
 }
 
-function mlJoin(a: ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>))), b: ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>)))): ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>)))
+function MlJoin(a: (seq<int>, (seq<int>, seq<int>), (seq<int>, seq<int>)), b: (seq<int>, (seq<int>, seq<int>), (seq<int>, seq<int>))): (seq<int>, (seq<int>, seq<int>), (seq<int>, seq<int>))
     requires |a.0| == |a.1.0| == |a.1.1| == |a.2.0| == |a.2.1| == |b.0| == |b.1.0| == |b.1.1| == |b.2.0| == |b.2.1|
 {
-    var mlRes := (pMax(pMax(a.0, b.0), vAdd(a.1.0, b.2.0)));
-    var mblRes := mblJoin(a.1, b.1);
-    var mtlRes := mtlJoin(a.2, b.2);
-    (mlRes, mblRes, mtlRes)
+    var MlRes := pMax(pMax(a.0, b.0), vAdd(a.1.0, b.2.0));
+    var MblRes := MblJoin(a.1, b.1);
+    var MtlRes := MtlJoin(a.2, b.2);
+    (MlRes, MblRes, MtlRes)
 }
 
-lemma lsJoinAssoc(a: (seq<int>), b: (seq<int>), c: (seq<int>))
+lemma LsJoinAssoc(a: seq<int>, b: seq<int>, c: seq<int>)
     decreases |a|, |b|, |c|
     requires |a| == |b| == |c|
-    ensures lsJoin(lsJoin(a, b), c) == lsJoin(a, lsJoin(b, c))
+    ensures LsJoin(LsJoin(a, b), c) == LsJoin(a, LsJoin(b, c))
 {
-    if |a| == 0 {}
-    else if |a| == 1 {}
+    var n := |a|;
+    if n == 0 {}
+    else if n == 1 {}
     else
     {
-        var a' := a[..|a|-1];
-        var b' := b[..|b|-1];
-        var c' := c[..|c|-1];
-        lsJoinAssoc((a'), (b'), (c'));
+        var a' := a[..n-1];
+        var b' := b[..n-1];
+        var c' := c[..n-1];
+        LsJoinAssoc((a'), (b'), (c'));
 
-        var af := [a[|a|-1]];
-        var bf := [b[|b|-1]];
-        var cf := [c[|c|-1]];
-        lsJoinAssoc((af), (bf), (cf));
+        var af := [a[n-1]];
+        var bf := [b[n-1]];
+        var cf := [c[n-1]];
+        LsJoinAssoc((af), (bf), (cf));
     }
 }
 
-lemma mblJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: ((seq<int>), (seq<int>)))
+lemma MblJoinAssoc(a: (seq<int>, seq<int>), b: (seq<int>, seq<int>), c: (seq<int>, seq<int>))
     decreases |a.0|, |a.1|, |b.0|, |b.1|, |c.0|, |c.1|
     requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1|
-    ensures mblJoin(mblJoin(a, b), c) == mblJoin(a, mblJoin(b, c))
+    ensures MblJoin(MblJoin(a, b), c) == MblJoin(a, MblJoin(b, c))
 {
-    if |a.0| == 0 {}
-    else if |a.0| == 1 {}
+    var n := |a.0|;
+    if n == 0 {}
+    else if n == 1 {}
     else
     {
-        var a0' := a.0[..|a.0|-1];
-        var a1' := a.1[..|a.1|-1];
-        var b0' := b.0[..|b.0|-1];
-        var b1' := b.1[..|b.1|-1];
-        var c0' := c.0[..|c.0|-1];
-        var c1' := c.1[..|c.1|-1];
-        mblJoinAssoc(((a0', a1')), ((b0', b1')), ((c0', c1')));
+        var a0' := a.0[..n-1];
+        var a1' := a.1[..n-1];
+        var b0' := b.0[..n-1];
+        var b1' := b.1[..n-1];
+        var c0' := c.0[..n-1];
+        var c1' := c.1[..n-1];
+        MblJoinAssoc(((a0', a1')), ((b0', b1')), ((c0', c1')));
 
-        var a0f := [a.0[|a.0|-1]];
-        var a1f := [a.1[|a.1|-1]];
-        var b0f := [b.0[|b.0|-1]];
-        var b1f := [b.1[|b.1|-1]];
-        var c0f := [c.0[|c.0|-1]];
-        var c1f := [c.1[|c.1|-1]];
-        mblJoinAssoc(((a0f, a1f)), ((b0f, b1f)), ((c0f, c1f)));
+        var a0f := [a.0[n-1]];
+        var a1f := [a.1[n-1]];
+        var b0f := [b.0[n-1]];
+        var b1f := [b.1[n-1]];
+        var c0f := [c.0[n-1]];
+        var c1f := [c.1[n-1]];
+        MblJoinAssoc(((a0f, a1f)), ((b0f, b1f)), ((c0f, c1f)));
     }
 }
 
-lemma mtlJoinAssoc(a: ((seq<int>), (seq<int>)), b: ((seq<int>), (seq<int>)), c: ((seq<int>), (seq<int>)))
+lemma MtlJoinAssoc(a: (seq<int>, seq<int>), b: (seq<int>, seq<int>), c: (seq<int>, seq<int>))
     decreases |a.0|, |a.1|, |b.0|, |b.1|, |c.0|, |c.1|
     requires |a.0| == |a.1| == |b.0| == |b.1| == |c.0| == |c.1|
-    ensures mtlJoin(mtlJoin(a, b), c) == mtlJoin(a, mtlJoin(b, c))
+    ensures MtlJoin(MtlJoin(a, b), c) == MtlJoin(a, MtlJoin(b, c))
 {
-    if |a.0| == 0 {}
-    else if |a.0| == 1 {}
+    var n := |a.0|;
+    if n == 0 {}
+    else if n == 1 {}
     else
     {
-        var a0' := a.0[..|a.0|-1];
-        var a1' := a.1[..|a.1|-1];
-        var b0' := b.0[..|b.0|-1];
-        var b1' := b.1[..|b.1|-1];
-        var c0' := c.0[..|c.0|-1];
-        var c1' := c.1[..|c.1|-1];
-        mtlJoinAssoc(((a0', a1')), ((b0', b1')), ((c0', c1')));
+        var a0' := a.0[..n-1];
+        var a1' := a.1[..n-1];
+        var b0' := b.0[..n-1];
+        var b1' := b.1[..n-1];
+        var c0' := c.0[..n-1];
+        var c1' := c.1[..n-1];
+        MtlJoinAssoc(((a0', a1')), ((b0', b1')), ((c0', c1')));
 
-        var a0f := [a.0[|a.0|-1]];
-        var a1f := [a.1[|a.1|-1]];
-        var b0f := [b.0[|b.0|-1]];
-        var b1f := [b.1[|b.1|-1]];
-        var c0f := [c.0[|c.0|-1]];
-        var c1f := [c.1[|c.1|-1]];
-        mtlJoinAssoc(((a0f, a1f)), ((b0f, b1f)), ((c0f, c1f)));
+        var a0f := [a.0[n-1]];
+        var a1f := [a.1[n-1]];
+        var b0f := [b.0[n-1]];
+        var b1f := [b.1[n-1]];
+        var c0f := [c.0[n-1]];
+        var c1f := [c.1[n-1]];
+        MtlJoinAssoc(((a0f, a1f)), ((b0f, b1f)), ((c0f, c1f)));
     }
 }
 
-lemma mlJoinAssoc(a: ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>))), b: ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>))), c: ((seq<int>), ((seq<int>), (seq<int>)), ((seq<int>), (seq<int>))))
+lemma MlJoinAssoc(a: (seq<int>, (seq<int>, seq<int>), (seq<int>, seq<int>)), b: (seq<int>, (seq<int>, seq<int>), (seq<int>, seq<int>)), c: (seq<int>, (seq<int>, seq<int>), (seq<int>, seq<int>)))
     decreases |a.0|, |a.1.0|, |a.1.1|, |a.2.0|, |a.2.1|, |b.0|, |b.1.0|, |b.1.1|, |b.2.0|, |b.2.1|, |c.0|, |c.1.0|, |c.1.1|, |c.2.0|, |c.2.1|
-    requires |a.0| == |a.1.0| == |a.1.1| == |a.2.0| == |a.2.1| == |b.0| == |b.1.0| == |b.1.1| == |b.2.0| == |b.2.1| == |c.0| == |c.1.0| == |c.1.1| == |c.2.0| == |c.2.1| && a.1.1 == a.2.1 && b.1.1 == b.2.1 && c.1.1 == c.2.1
-    ensures mlJoin(mlJoin(a, b), c) == mlJoin(a, mlJoin(b, c))
+    requires |a.0| == |a.1.0| == |a.1.1| == |a.2.0| == |a.2.1| == |b.0| == |b.1.0| == |b.1.1| == |b.2.0| == |b.2.1| == |c.0| == |c.1.0| == |c.1.1| == |c.2.0| == |c.2.1|  && a.1.1 == a.2.1 && b.1.1 == b.2.1 && c.1.1 == c.2.1
+    ensures MlJoin(MlJoin(a, b), c) == MlJoin(a, MlJoin(b, c))
 {
-    if |a.0| == 0 {}
-    else if |a.0| == 1 {}
+    var n := |a.0|;
+    if n == 0 {}
+    else if n == 1 {}
     else
     {
-        var a0' := a.0[..|a.0|-1];
-        var a10' := a.1.0[..|a.1.0|-1];
-        var a11' := a.1.1[..|a.1.1|-1];
-        var a20' := a.2.0[..|a.2.0|-1];
-        var a21' := a.2.1[..|a.2.1|-1];
-        var b0' := b.0[..|b.0|-1];
-        var b10' := b.1.0[..|b.1.0|-1];
-        var b11' := b.1.1[..|b.1.1|-1];
-        var b20' := b.2.0[..|b.2.0|-1];
-        var b21' := b.2.1[..|b.2.1|-1];
-        var c0' := c.0[..|c.0|-1];
-        var c10' := c.1.0[..|c.1.0|-1];
-        var c11' := c.1.1[..|c.1.1|-1];
-        var c20' := c.2.0[..|c.2.0|-1];
-        var c21' := c.2.1[..|c.2.1|-1];
-        mlJoinAssoc(((a0', (a10', a11'), (a20', a21'))), ((b0', (b10', b11'), (b20', b21'))), ((c0', (c10', c11'), (c20', c21'))));
+        var a0' := a.0[..n-1];
+        var a10' := a.1.0[..n-1];
+        var a11' := a.1.1[..n-1];
+        var a20' := a.2.0[..n-1];
+        var a21' := a.2.1[..n-1];
+        var b0' := b.0[..n-1];
+        var b10' := b.1.0[..n-1];
+        var b11' := b.1.1[..n-1];
+        var b20' := b.2.0[..n-1];
+        var b21' := b.2.1[..n-1];
+        var c0' := c.0[..n-1];
+        var c10' := c.1.0[..n-1];
+        var c11' := c.1.1[..n-1];
+        var c20' := c.2.0[..n-1];
+        var c21' := c.2.1[..n-1];
+        MlJoinAssoc(((a0', (a10', a11'), (a20', a21'))), ((b0', (b10', b11'), (b20', b21'))), ((c0', (c10', c11'), (c20', c21'))));
 
-        var a0f := [a.0[|a.0|-1]];
-        var a10f := [a.1.0[|a.1.0|-1]];
-        var a11f := [a.1.1[|a.1.1|-1]];
-        var a20f := [a.2.0[|a.2.0|-1]];
-        var a21f := [a.2.1[|a.2.1|-1]];
-        var b0f := [b.0[|b.0|-1]];
-        var b10f := [b.1.0[|b.1.0|-1]];
-        var b11f := [b.1.1[|b.1.1|-1]];
-        var b20f := [b.2.0[|b.2.0|-1]];
-        var b21f := [b.2.1[|b.2.1|-1]];
-        var c0f := [c.0[|c.0|-1]];
-        var c10f := [c.1.0[|c.1.0|-1]];
-        var c11f := [c.1.1[|c.1.1|-1]];
-        var c20f := [c.2.0[|c.2.0|-1]];
-        var c21f := [c.2.1[|c.2.1|-1]];
-        mlJoinAssoc(((a0f, (a10f, a11f), (a20f, a21f))), ((b0f, (b10f, b11f), (b20f, b21f))), ((c0f, (c10f, c11f), (c20f, c21f))));
+        var a0f := [a.0[n-1]];
+        var a10f := [a.1.0[n-1]];
+        var a11f := [a.1.1[n-1]];
+        var a20f := [a.2.0[n-1]];
+        var a21f := [a.2.1[n-1]];
+        var b0f := [b.0[n-1]];
+        var b10f := [b.1.0[n-1]];
+        var b11f := [b.1.1[n-1]];
+        var b20f := [b.2.0[n-1]];
+        var b21f := [b.2.1[n-1]];
+        var c0f := [c.0[n-1]];
+        var c10f := [c.1.0[n-1]];
+        var c11f := [c.1.1[n-1]];
+        var c20f := [c.2.0[n-1]];
+        var c21f := [c.2.1[n-1]];
+        MlJoinAssoc(((a0f, (a10f, a11f), (a20f, a21f))), ((b0f, (b10f, b11f), (b20f, b21f))), ((c0f, (c10f, c11f), (c20f, c21f))));
     }
 }
 
-lemma Homls(s: seq2D, t: seq2D)
+lemma HomLs(s: seq2D, t: seq2D)
     requires width(s) == width(t)
-    ensures ls(s + t) == lsJoin(ls(s), ls(t))
+    ensures Ls(s + t) == LsJoin(Ls(s), Ls(t))
 {
     if t == []
     {
@@ -274,14 +272,14 @@ lemma Homls(s: seq2D, t: seq2D)
         var t1 := t[..|t|-1];
         var t2 := [t[|t|-1]];
         assert (s + t1) + t2 == s + t;
-        Homls(s, t1);
-        lsJoinAssoc(ls(s), ls(t1), ls(t2));
+        HomLs(s, t1);
+        LsJoinAssoc(Ls(s), Ls(t1), Ls(t2));
     }
 }
 
-lemma Hommbl(s: seq2D, t: seq2D)
+lemma HomMbl(s: seq2D, t: seq2D)
     requires width(s) == width(t)
-    ensures mbl(s + t) == mblJoin(mbl(s), mbl(t))
+    ensures Mbl(s + t) == MblJoin(Mbl(s), Mbl(t))
 {
     if t == []
     {
@@ -295,14 +293,14 @@ lemma Hommbl(s: seq2D, t: seq2D)
         var t1 := t[..|t|-1];
         var t2 := [t[|t|-1]];
         assert (s + t1) + t2 == s + t;
-        Hommbl(s, t1);
-        mblJoinAssoc(mbl(s), mbl(t1), mbl(t2));
+        HomMbl(s, t1);
+        MblJoinAssoc(Mbl(s), Mbl(t1), Mbl(t2));
     }
 }
 
-lemma Hommtl(s: seq2D, t: seq2D)
+lemma HomMtl(s: seq2D, t: seq2D)
     requires width(s) == width(t)
-    ensures mtl(s + t) == mtlJoin(mtl(s), mtl(t))
+    ensures Mtl(s + t) == MtlJoin(Mtl(s), Mtl(t))
 {
     if t == []
     {
@@ -316,14 +314,14 @@ lemma Hommtl(s: seq2D, t: seq2D)
         var t1 := t[..|t|-1];
         var t2 := [t[|t|-1]];
         assert (s + t1) + t2 == s + t;
-        Hommtl(s, t1);
-        mtlJoinAssoc(mtl(s), mtl(t1), mtl(t2));
+        HomMtl(s, t1);
+        MtlJoinAssoc(Mtl(s), Mtl(t1), Mtl(t2));
     }
 }
 
-lemma Homml(s: seq2D, t: seq2D)
+lemma HomMl(s: seq2D, t: seq2D)
     requires width(s) == width(t)
-    ensures ml(s + t) == mlJoin(ml(s), ml(t))
+    ensures Ml(s + t) == MlJoin(Ml(s), Ml(t))
 {
     if t == []
     {
@@ -337,8 +335,9 @@ lemma Homml(s: seq2D, t: seq2D)
         var t1 := t[..|t|-1];
         var t2 := [t[|t|-1]];
         assert (s + t1) + t2 == s + t;
-        Homml(s, t1);
-        mlJoinAssoc(ml(s), ml(t1), ml(t2));
+        HomMl(s, t1);
+        MlJoinAssoc(Ml(s), Ml(t1), Ml(t2));
     }
 }
+
 

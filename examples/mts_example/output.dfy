@@ -1,35 +1,35 @@
-function Sum(s: seq<int>): (int)
+function Sum(s: seq<int>): int
 {
-    var SumRes := (if s == [] then 0 else Sum(s[..|s|-1]) + s[|s|-1]);
+    var SumRes := if s == [] then 0 else Sum(s[..|s|-1]) + s[|s|-1];
     (SumRes)
 }
 
-function Mts(s: seq<int>): ((int), (int))
+function Mts(s: seq<int>): (int, int)
 {
-    var MtsRes := (if s == [] then 0 else Max(Mts(s[..|s|-1]).0 + s[|s|-1], 0));
+    var MtsRes := if s == [] then 0 else Max(Mts(s[..|s|-1]).0 + s[|s|-1], 0);
     var SumRes := Sum(s);
     (MtsRes, SumRes)
 }
 
-function SumJoin(a: (int), b: (int)): (int)
+function SumJoin(a: int, b: int): int
 {
-    var SumRes := (a + b);
+    var SumRes := a + b;
     (SumRes)
 }
 
-function MtsJoin(h: ((int), (int)), j: ((int), (int))): ((int), (int))
+function MtsJoin(h: (int, int), j: (int, int)): (int, int)
 {
-    var MtsRes := (Max(j.0, h.0 + j.1));
+    var MtsRes := Max(j.0, h.0 + j.1);
     var SumRes := SumJoin(h.1, j.1);
     (MtsRes, SumRes)
 }
 
-lemma SumJoinAssoc(a: (int), b: (int), c: (int))
+lemma SumJoinAssoc(a: int, b: int, c: int)
     ensures SumJoin(SumJoin(a, b), c) == SumJoin(a, SumJoin(b, c))
 {
 }
 
-lemma MtsJoinAssoc(a: ((int), (int)), b: ((int), (int)), c: ((int), (int)))
+lemma MtsJoinAssoc(a: (int, int), b: (int, int), c: (int, int))
     ensures MtsJoin(MtsJoin(a, b), c) == MtsJoin(a, MtsJoin(b, c))
 {
 }

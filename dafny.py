@@ -168,6 +168,8 @@ class Type:
         """Return the string representation of this Type."""
         if self.simple_type:
             return f"{self.simple_type}"
+        elif len(self.tuple_type) == 1:
+            return f"{self.tuple_type[0]}"
         return f"({', '.join(map(str, self.tuple_type))})"
 
     def get_seq_indices(self) -> List[str]:

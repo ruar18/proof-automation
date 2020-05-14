@@ -28,7 +28,7 @@
 (definition Ml
     (type (Dafny.SEQ2D) Dafny.SEQ)
     (body (function (s) {if s == [] then [] else if |s| == 1 then pMax(preSum(s[0]), zeroSeq(|s[0]|))
-                            else pMax(pMax(Ml(s[..|s|-1]).0, Ml([s[|s|-1]]).0), vAdd(Mbl(s[..|s|-1]).0, Mtl([s[|s|-1]]).0))}))
+    else pMax(pMax(Ml(s[..|s|-1]).0, Ml([s[|s|-1]]).0), vAdd(Mbl(s[..|s|-1]).0, Mtl([s[|s|-1]]).0))}))
     (join (function (a b) {pMax(pMax(a.0, b.0), vAdd(a.1.0, b.2.0))}))
     (decreases ({|s|}))
     (requires ())

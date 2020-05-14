@@ -44,7 +44,7 @@ def pp_return(func: Function) -> str:
 
 def pp_function_body(func: Function) -> str:
     """Return a string representing the body of the lifted <func>."""
-    body = f"{Dafny.VAR} {func.name}Res := ({func.body});"
+    body = f"{Dafny.VAR} {func.name}Res := {func.body};"
     inputs = pp_function_inputs(func, print_type=False)
     for aux in func.aux:
         body += f"\n{Dafny.VAR} {aux.name}Res := {aux.name}({inputs});"
@@ -122,7 +122,7 @@ def pp_seq_requires(func: Function, names: List[str]) -> str:
 
 def pp_join_body(func: Function) -> str:
     """Return a string representing the join body for <func>."""
-    body = f"{Dafny.VAR} {func.name}Res := ({func.join_body});"
+    body = f"{Dafny.VAR} {func.name}Res := {func.join_body};"
     a, b = func.join_param_names
     for i, aux in enumerate(func.aux):
         body += f"\n{Dafny.VAR} {aux.name}Res := " \
@@ -178,12 +178,11 @@ def pp_assoc_signature(func: Function) -> str:
            f"(a: {_type}, b: {_type}, c: {_type})"
 
 
-def pp_assoc_base_case(func: Function) -> str:
+def pp_assoc_base_case() -> str:
     """Return a string representation of the base case of the associativity
-    lemma for <func>."""
-    sequences = pp_all_sequences(func, "a")
-    return f"{Dafny.IF} |{sequences[0]}| == 0 {{}}\n" \
-           f"{Dafny.ELSEIF} |{sequences[0]}| == 1 {{}}"
+    lemma."""
+    return f"{Dafny.IF} n == 0 {{}}\n" \
+           f"{Dafny.ELSEIF} n == 1 {{}}"
 
 
 def pp_assoc_slices(func: Function, name: str) -> str:
@@ -194,7 +193,7 @@ def pp_assoc_slices(func: Function, name: str) -> str:
     for seq in sequences:
         # Remove all periods from the slice name
         slice_name = seq.replace(".", "") + "'"
-        slices += f"{Dafny.VAR} {slice_name} := {seq}[..|{seq}|-1];\n"
+        slices += f"{Dafny.VAR} {slice_name} := {seq}[..n-1];\n"
     return slices
 
 
@@ -206,7 +205,7 @@ def pp_assoc_finals(func: Function, name: str) -> str:
     for seq in sequences:
         # Remove all periods from the slice name
         final_name = seq.replace(".", "") + "f"
-        finals += f"{Dafny.VAR} {final_name} := [{seq}[|{seq}|-1]];\n"
+        finals += f"{Dafny.VAR} {final_name} := [{seq}[n-1]];\n"
     return finals
 
 
@@ -267,10 +266,12 @@ def pp_assoc_proof(func: Function) -> str:
     decreases = indent(pp_assoc_decreases(func))
     requires = indent(f"{Dafny.REQ} {pp_seq_requires(func, ['a', 'b', 'c'])}"
                       f" {pp_assoc_requires(func)}")
-    base = indent(pp_assoc_base_case(func))
+    base = indent(pp_assoc_base_case())
     induct = indent(pp_assoc_induction(func))
+    sequences = pp_all_sequences(func, "a")
+    n_declaration = indent(f"{Dafny.VAR} n := |{sequences[0]}|;")
     return f"{signature}\n{decreases}\n{requires}\n{ensures}\n" \
-           f"{{\n{base}\n{induct}}}"
+           f"{{\n{n_declaration}\n{base}\n{induct}}}"
 
 
 # Homomorphism proof formatting
