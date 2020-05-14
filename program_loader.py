@@ -12,7 +12,7 @@ def generate_proof(input_name: str, output_name: str) -> None:
     Dafny functions, write the homomorphism proof for each function in the file
     <output_name>."""
     f = open(input_name, "r")
-    contents = f"({f.read()})"
+    contents = f"({f.read()})".replace('{', '"').replace('}', '"')
     parsed = loads(contents)
     func_names = _read_functions(parsed[0])
     funcs = []
@@ -34,37 +34,14 @@ def _read_functions(func_list: List[Union[List[Any], Symbol, str]]) -> List[str]
     """Construct a list of function names from the parsed S-expression
     <func_list> representing a list of functions.
     Format of <func_list>:
-    ["functions", [<function_list>]]
+    ["functions", <functions>]
     """
-    return [func_symbol.value for func_symbol in func_list[1]]
+    return [func_symbol.value() for func_symbol in func_list[1:]]
 
 
 def _get_strings(lst: List[Symbol]) -> List[str]:
     """Given a list of Symbols, return a list of corresponding strings."""
     return [symbol.value() for symbol in lst]
-
-
-def _flatten(lst: List[Any]) -> List[Any]:
-    """Given an arbitrarily-nested list, return a list of all the elements."""
-    result = []
-    for cur in lst:
-        if isinstance(cur, list):
-            result.extend(_flatten(cur))
-        else:
-            result.append(cur)
-    return result
-
-
-def _get_body(lst: List[Union[List[Any], Symbol]]) -> str:
-    """Given a (nested) list of Symbols, return a string that is
-    the concatenation of all the corresponding strings."""
-    result = ""
-    for cur in lst:
-        if isinstance(cur, list):
-            result = result[:-1] + f"({_get_body(cur)[:-1]})"
-        else:
-            result += cur.value() + " "
-    return result
 
 
 def _load_function(func_exp: List[Union[List[Any], Symbol, str]],
@@ -88,8 +65,8 @@ def _load_function(func_exp: List[Union[List[Any], Symbol, str]],
         param_types = [eval(symbol.value()) for symbol in func_exp[2][1]]
         param_names = _get_strings(func_exp[3][1][1])
         return_type = Type([Type([], eval(func_exp[2][2].value()))])
-        decreases = _get_strings(func_exp[5][1])
-        requires = _get_strings(func_exp[6][1])
+        decreases = func_exp[5][1]
+        requires = func_exp[6][1]
         ensures = func_exp[7][1]
         aux_names = _get_strings(func_exp[8][1])
         body = func_exp[3][1][2]
@@ -107,3 +84,4 @@ def _load_function(func_exp: List[Union[List[Any], Symbol, str]],
         return Function(name, param_names, param_types, return_type,
                         decreases, requires, ensures, aux, body,
                         join_param_names, join_body)
+
