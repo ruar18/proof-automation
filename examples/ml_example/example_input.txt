@@ -1,4 +1,4 @@
-((functions ls mbl mtl ml)
+(functions ls mbl mtl ml)
 (definition ls
     (type (Dafny.SEQ2D) Dafny.SEQ)
     (body (function (s) "if s == [] then [] else if |s| == 1 then preSum(s[0]) else vAdd(ls(s[..|s|-1]), preSum(s[|s|-1]))"))
@@ -34,4 +34,3 @@
     (requires ())
     (ensures ("|ml(s).0| == width(s)"))
     (aux (mbl mtl)))
-)

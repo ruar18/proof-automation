@@ -12,7 +12,7 @@ def generate_proof(input_name: str, output_name: str) -> None:
     Dafny functions, write the homomorphism proof for each function in the file
     <output_name>."""
     f = open(input_name, "r")
-    contents = f.read()
+    contents = f"({f.read()})"
     parsed = loads(contents)
     funcs = []
     aux_dict = {}
@@ -33,6 +33,11 @@ def read_functions(func_list: List[Union[List[Any], Symbol, str]]) -> List[str]:
     return [func_symbol.value for func_symbol in func_list[1]]
 
 
+def _get_strings(lst: List[Symbol]) -> List[str]:
+    """Given a list of Symbols, return a list of corresponding strings."""
+    return [symbol.value() for symbol in lst]
+
+
 def load_function(func_exp: List[Union[List[Any], Symbol, str]],
                   avail_aux: Dict[str, Function]) -> Function:
     """Construct a Dafny Function from the parsed S-expression <func_exp>
@@ -49,22 +54,28 @@ def load_function(func_exp: List[Union[List[Any], Symbol, str]],
         ["aux", [<aux>]]
     ]
     """
-    name = func_exp[1].value()
-    param_types = [eval(_type.value()) for _type in func_exp[2][1]]
-    param_names = [param.value() for param in func_exp[3][1][1]]
-    return_type = Type([Type([], eval(func_exp[2][2].value()))])
-    decreases = [dec.value() for dec in func_exp[5][1]]
-    requires = func_exp[6][1]
-    ensures = func_exp[7][1]
-    aux_names = [symbol.value() for symbol in func_exp[8][1]]
-    aux = []
-    for cur in aux_names:
-        try:
+    try:
+        name = func_exp[1].value()
+        param_types = [eval(symbol.value()) for symbol in func_exp[2][1]]
+        param_names = _get_strings(func_exp[3][1][1])
+        return_type = Type([Type([], eval(func_exp[2][2].value()))])
+        decreases = _get_strings(func_exp[5][1])
+        requires = _get_strings(func_exp[6][1])
+        ensures = func_exp[7][1]
+        aux_names = _get_strings(func_exp[8][1])
+        body = func_exp[3][1][2]
+        join_param_names = _get_strings(func_exp[4][1][1])
+        join_body = func_exp[4][1][2]
+        aux = []
+        for cur in aux_names:
             aux.append(avail_aux[cur])
-        except KeyError:
-            print(f"Function {cur} has not been defined.")
-    body = func_exp[3][1][2]
-    join_body = func_exp[4][1][2]
-    return Function(name, param_names, param_types, return_type,
-                    decreases, requires, ensures, aux, body, join_body)
+    except (IndexError, KeyError) as e:
+        if e == IndexError:
+            print(f"Unrecognized input format.")
+        else:
+            print(f"Auxiliary function has not been defined.")
+    else:
+        return Function(name, param_names, param_types, return_type,
+                        decreases, requires, ensures, aux, body,
+                        join_param_names, join_body)
 

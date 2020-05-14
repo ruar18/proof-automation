@@ -1,4 +1,4 @@
-((functions recSumS Mrr Mcr Mtlr Mblr)
+(functions recSumS Mrr Mcr Mtlr Mblr)
 (definition recSumS
     (type (Dafny.SEQ2D) Dafny.SEQ)
     (body (function (s) "if s == [] then [] else if |s| == 1 then preSum(s[0]) else vAdd(recSumS(s[..|s|-1]), preSum(s[|s|-1]))"))
@@ -42,4 +42,3 @@
     (requires ())
     (ensures ())
     (aux (recSumS)))
-)

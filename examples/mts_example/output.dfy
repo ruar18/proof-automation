@@ -17,10 +17,10 @@ function SumJoin(a: (int), b: (int)): (int)
     (SumRes)
 }
 
-function MtsJoin(a: ((int), (int)), b: ((int), (int))): ((int), (int))
+function MtsJoin(h: ((int), (int)), j: ((int), (int))): ((int), (int))
 {
-    var MtsRes := (Max(b.0, a.0 + b.1));
-    var SumRes := SumJoin(a.1, b.1);
+    var MtsRes := (Max(j.0, h.0 + j.1));
+    var SumRes := SumJoin(h.1, j.1);
     (MtsRes, SumRes)
 }
 

@@ -90,7 +90,9 @@ def pp_lifted_join(func: Function) -> str:
 def pp_join_signature(func: Function) -> str:
     """Return the join signature for <func>."""
     _type = func.lifted_type
-    return f"{Dafny.FUNCTION} {func.name}Join(a: {_type}, b: {_type}): {_type}"
+    a, b = func.join_param_names
+    return f"{Dafny.FUNCTION} {func.name}Join({a}: {_type}, " \
+           f"{b}: {_type}): {_type}"
 
 
 def pp_all_sequences(func: Function, name: str) -> List[str]:
@@ -121,9 +123,10 @@ def pp_seq_requires(func: Function, names: List[str]) -> str:
 def pp_join_body(func: Function) -> str:
     """Return a string representing the join body for <func>."""
     body = f"{Dafny.VAR} {func.name}Res := ({func.join_body});"
+    a, b = func.join_param_names
     for i, aux in enumerate(func.aux):
         body += f"\n{Dafny.VAR} {aux.name}Res := " \
-                f"{aux.name}Join(a.{i + 1}, b.{i + 1});"
+                f"{aux.name}Join({a}.{i + 1}, {b}.{i + 1});"
     return body
 
 
