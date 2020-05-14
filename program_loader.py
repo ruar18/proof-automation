@@ -14,17 +14,23 @@ def generate_proof(input_name: str, output_name: str) -> None:
     f = open(input_name, "r")
     contents = f"({f.read()})"
     parsed = loads(contents)
+    func_names = _read_functions(parsed[0])
     funcs = []
     aux_dict = {}
     # TODO: find a more elegant solution
     for definition in parsed[1:]:
-        cur_func = load_function(definition, avail_aux=aux_dict)
+        cur_func = _load_function(definition, avail_aux=aux_dict)
         funcs.append(cur_func)
         aux_dict[cur_func.name] = cur_func
+
+    for name in func_names:
+        if name not in aux_dict:
+            print(f"Function {name} has not been declared.")
+
     print_all(output_name, funcs)
 
 
-def read_functions(func_list: List[Union[List[Any], Symbol, str]]) -> List[str]:
+def _read_functions(func_list: List[Union[List[Any], Symbol, str]]) -> List[str]:
     """Construct a list of function names from the parsed S-expression
     <func_list> representing a list of functions.
     Format of <func_list>:
@@ -38,8 +44,31 @@ def _get_strings(lst: List[Symbol]) -> List[str]:
     return [symbol.value() for symbol in lst]
 
 
-def load_function(func_exp: List[Union[List[Any], Symbol, str]],
-                  avail_aux: Dict[str, Function]) -> Function:
+def _flatten(lst: List[Any]) -> List[Any]:
+    """Given an arbitrarily-nested list, return a list of all the elements."""
+    result = []
+    for cur in lst:
+        if isinstance(cur, list):
+            result.extend(_flatten(cur))
+        else:
+            result.append(cur)
+    return result
+
+
+def _get_body(lst: List[Union[List[Any], Symbol]]) -> str:
+    """Given a (nested) list of Symbols, return a string that is
+    the concatenation of all the corresponding strings."""
+    result = ""
+    for cur in lst:
+        if isinstance(cur, list):
+            result = result[:-1] + f"({_get_body(cur)[:-1]})"
+        else:
+            result += cur.value() + " "
+    return result
+
+
+def _load_function(func_exp: List[Union[List[Any], Symbol, str]],
+                   avail_aux: Dict[str, Function]) -> Function:
     """Construct a Dafny Function from the parsed S-expression <func_exp>
     representing the function definition. <avail_aux> is a dictionary
     {name: function} of functions already defined.
@@ -78,4 +107,3 @@ def load_function(func_exp: List[Union[List[Any], Symbol, str]],
         return Function(name, param_names, param_types, return_type,
                         decreases, requires, ensures, aux, body,
                         join_param_names, join_body)
-
