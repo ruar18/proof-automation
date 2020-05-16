@@ -5,8 +5,8 @@ from typing import List, Union, Any, Dict
 
 from sexpdata import Symbol, loads
 
-from dafny import Function, Type, Dafny
-from proof_print import print_all
+from src.dafny import Function, Type, Dafny
+from src.proof_print import print_all
 
 
 def generate_proof(input_name: str, output_name: str) -> None:

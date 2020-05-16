@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from typing import List, Callable
 
-from dafny import Function
-from format import pp_lifted_function, pp_lifted_join, pp_assoc_proof, \
+from src.dafny import Function
+from src.format import pp_lifted_function, pp_lifted_join, pp_assoc_proof, \
     pp_hom_proof
 
 all_components = [pp_lifted_function, pp_lifted_join, pp_assoc_proof,

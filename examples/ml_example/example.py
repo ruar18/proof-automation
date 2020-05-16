@@ -5,7 +5,7 @@
     - ml
 """
 
-import program_loader
+from src import program_loader
 
 
 def test_printing() -> None:

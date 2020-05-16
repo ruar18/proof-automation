@@ -6,7 +6,7 @@ from __future__ import annotations
 import textwrap
 from typing import List
 
-from dafny import Dafny, Function, Type
+from src.dafny import Dafny, Function, Type
 
 INDENT_AMOUNT = 4
 
